@@ -20,16 +20,20 @@ import Button from "@/components/buttons/button";
 
 const { width, height } = Dimensions.get("window");
 
-export default function Login() {
+export default function Signup() {
   const router = useRouter();
   const theme = useTheme();
   const { colors, typography } = theme;
 
-  const [mat, setMat] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [matricule, setMatricule] = useState("");
+  const [className, setClassName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const iconColor = "#331424";
+  const iconColor = colors.primary;
 
   return (
     <ImageBackground
@@ -62,23 +66,71 @@ export default function Login() {
                 },
               ]}
             >
-              LOGIN
+              SIGN UP
             </Text>
 
-            {/* Matricule Input */}
+            {/* First Name */}
+            <View style={styles.inputContainer}>
+              <Ionicons name="person-outline" size={24} color={iconColor} />
+              <TextInput
+                placeholder="First Name"
+                value={firstName}
+                onChangeText={setFirstName}
+                style={[{fontFamily: typography.fontFamily.body}, styles.input]}
+                placeholderTextColor="#888"
+              />
+            </View>
+
+            {/* Last Name */}
+            <View style={styles.inputContainer}>
+              <Ionicons name="person-add-outline" size={24} color={iconColor} />
+              <TextInput
+                placeholder="Last Name"
+                value={lastName}
+                onChangeText={setLastName}
+                style={[{fontFamily: typography.fontFamily.body}, styles.input]}
+                placeholderTextColor="#888"
+              />
+            </View>
+
+            {/* Matricule */}
             <View style={styles.inputContainer}>
               <Ionicons name="id-card-outline" size={24} color={iconColor} />
               <TextInput
                 placeholder="Matricule"
-                value={mat}
-                onChangeText={setMat}
+                value={matricule}
+                onChangeText={setMatricule}
+                style={[{fontFamily: typography.fontFamily.body}, styles.input]}
+                placeholderTextColor="#888"
+              />
+            </View>
+
+            {/* Class */}
+            <View style={styles.inputContainer}>
+              <Ionicons name="school-outline" size={24} color={iconColor} />
+              <TextInput
+                placeholder="Class"
+                value={className}
+                onChangeText={setClassName}
+                style={[{fontFamily: typography.fontFamily.body}, styles.input]}
+                placeholderTextColor="#888"
+              />
+            </View>
+
+            {/* Email */}
+            <View style={styles.inputContainer}>
+              <Ionicons name="mail-outline" size={24} color={iconColor} />
+              <TextInput
+                placeholder="Email"
+                value={email}
+                onChangeText={setEmail}
                 style={[{fontFamily: typography.fontFamily.body}, styles.input]}
                 keyboardType="email-address"
                 placeholderTextColor="#888"
               />
             </View>
 
-            {/* Password Input */}
+            {/* Password */}
             <View style={styles.inputContainer}>
               <Ionicons name="lock-closed-outline" size={24} color={iconColor} />
               <TextInput
@@ -98,22 +150,23 @@ export default function Login() {
               </TouchableOpacity>
             </View>
 
-            {/* Login Link */}
-            <TouchableOpacity
-              onPress={() => router.push("/auth/signup")}
-              style={{ marginTop: 16 }}
-            >
-              <Text style={{ color: colors.primary, fontSize: 16, fontFamily: typography.fontFamily.buttonText }}>
-                Already have an account? Sign Up.
-              </Text>
-            </TouchableOpacity>
-
+            {/* Signup Button */}
             <Button
-              title="Login"
+              title="Sign Up"
               iconPosition="right"
               icon={require("../../assets/icons/Forward.png")}
               onPress={() => router.push("/(tabs)")}
             />
+
+            {/* Login Link */}
+            <TouchableOpacity
+              onPress={() => router.push("/auth/login")}
+              style={{ marginTop: 16 }}
+            >
+              <Text style={{ color: colors.primary, fontSize: 16, fontFamily: typography.fontFamily.buttonText }}>
+                Already have an account? Login.
+              </Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -135,11 +188,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 24,
-    gap: 16,
+    gap: 12, 
   },
   logo: {
-    width: 154,
-    height: 223,
+    width: 80, 
+    height: 120, 
     marginBottom: 10,
   },
   text: {
@@ -153,7 +206,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 12,
     paddingHorizontal: 12,
-    marginVertical: 8,
+    marginVertical: 4, // reduced space between inputs
     height: 50,
     width: "100%",
   },

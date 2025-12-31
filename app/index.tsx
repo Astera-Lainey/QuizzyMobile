@@ -39,7 +39,7 @@ export default function GetStartedMinimal() {
         <View style={styles.bottomContainer}>
           <Button
             title="Get Started"
-            onPress={() => router.push("/auth/login")}
+            onPress={() => router.push("/auth/signup")}
             iconPosition="right"
             icon={require('../assets/icons/Forward.png')}
           />
