@@ -104,7 +104,7 @@ export default function Login() {
               style={{ marginTop: 16 }}
             >
               <Text style={{ color: colors.primary, fontSize: 16, fontFamily: typography.fontFamily.buttonText }}>
-                Already have an account? Sign Up.
+                Don't have an account? Sign Up.
               </Text>
             </TouchableOpacity>
 

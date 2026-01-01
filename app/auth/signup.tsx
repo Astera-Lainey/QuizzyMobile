@@ -12,6 +12,10 @@ import {
   TextInput,
   TouchableOpacity,
 } from "react-native";
+import { Picker } from "@react-native-picker/picker";
+
+const [selectedClass, setSelectedClass] = useState(""); 
+const classOptions = ["4", "3", "2", "1"]; // example classes fill in the rest
 import { useRouter } from "expo-router";
 import { BlurView } from "expo-blur";
 import { useTheme } from "@/theme/global";
@@ -105,17 +109,21 @@ export default function Signup() {
               />
             </View>
 
-            {/* Class */}
+            {/* Class Dropdown */}
             <View style={styles.inputContainer}>
               <Ionicons name="school-outline" size={24} color={iconColor} />
-              <TextInput
-                placeholder="Class"
-                value={className}
-                onChangeText={setClassName}
-                style={[{fontFamily: typography.fontFamily.body}, styles.input]}
-                placeholderTextColor="#888"
-              />
+              <Picker
+                selectedValue={selectedClass}
+                onValueChange={(itemValue) => setSelectedClass(itemValue)}
+                style={[{fontFamily: typography.fontFamily.body}, styles.picker]}
+              >
+                <Picker.Item label="Select Class" value="" />
+                {classOptions.map((cls, index) => (
+                  <Picker.Item key={index} label={cls} value={cls} />
+                ))}
+              </Picker>
             </View>
+
 
             {/* Email */}
             <View style={styles.inputContainer}>
@@ -175,6 +183,12 @@ export default function Signup() {
 }
 
 const styles = StyleSheet.create({
+  picker: {
+  flex: 1,
+  marginLeft: 8,
+  color: "#888",
+},
+
   background: {
     flex: 1,
     width,
