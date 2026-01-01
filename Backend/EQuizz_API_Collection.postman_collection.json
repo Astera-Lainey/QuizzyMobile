@@ -1,0 +1,1381 @@
+{
+	"info": {
+		"_postman_id": "equizz-api-collection",
+		"name": "EQuizz API Collection",
+		"description": "Collection complète des APIs du projet EQuizz - Plateforme d'évaluation des enseignements",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication - Étudiants",
+			"item": [
+				{
+					"name": "Register Student",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"matricule\": \"STU2024001\",\n  \"email\": \"etudiant@univ-yaounde.cm\",\n  \"firstName\": \"Jean\",\n  \"lastName\": \"Dupont\",\n  \"phoneNumber\": 123456789,\n  \"password\": \"motdepasse123\",\n  \"classId\": 1,\n  \"studentCardId\": \"CARD123456\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/student/register",
+							"host": ["{{base_url}}"],
+							"path": ["student", "register"]
+						}
+					}
+				},
+				{
+					"name": "Login Student",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"matricule\": \"STU2024001\",\n  \"password\": \"motdepasse123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/student/login",
+							"host": ["{{base_url}}"],
+							"path": ["student", "login"]
+						}
+					}
+				},
+				{
+					"name": "Login with Card",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"studentCardId\": \"CARD123456\",\n  \"password\": \"motdepasse123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/student/login/card",
+							"host": ["{{base_url}}"],
+							"path": ["student", "login", "card"]
+						}
+					}
+				},
+				{
+					"name": "Verify Email",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/student/verify-email?token=verification-token-here",
+							"host": ["{{base_url}}"],
+							"path": ["student", "verify-email"],
+							"query": [
+								{
+									"key": "token",
+									"value": "verification-token-here"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Change Class (N+1)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"newClassId\": 2,\n  \"academicYearId\": 3\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/student/change-class",
+							"host": ["{{base_url}}"],
+							"path": ["student", "change-class"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Students Management",
+			"item": [
+				{
+					"name": "Get All Students",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/student",
+							"host": ["{{base_url}}"],
+							"path": ["student"]
+						}
+					}
+				},
+				{
+					"name": "Get Student by Matricule",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/student/STU2024001",
+							"host": ["{{base_url}}"],
+							"path": ["student", "STU2024001"]
+						}
+					}
+				},
+				{
+					"name": "Update Student",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Jean Updated\",\n  \"lastName\": \"Dupont Updated\",\n  \"phoneNumber\": 987654321\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/student/update/STU2024001",
+							"host": ["{{base_url}}"],
+							"path": ["student", "update", "STU2024001"]
+						}
+					}
+				},
+				{
+					"name": "Delete Student",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/student/delete/STU2024001",
+							"host": ["{{base_url}}"],
+							"path": ["student", "delete", "STU2024001"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Academic Years",
+			"item": [
+				{
+					"name": "Get All Academic Years",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/year",
+							"host": ["{{base_url}}"],
+							"path": ["year"]
+						}
+					}
+				},
+				{
+					"name": "Get Current Academic Year",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/year/current",
+							"host": ["{{base_url}}"],
+							"path": ["year", "current"]
+						}
+					}
+				},
+				{
+					"name": "Create Academic Year",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"startDate\": \"2024-09-01\",\n  \"endDate\": \"2025-06-30\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/year",
+							"host": ["{{base_url}}"],
+							"path": ["year"]
+						}
+					}
+				},
+				{
+					"name": "Update Academic Year",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"startDate\": \"2024-09-01\",\n  \"endDate\": \"2025-07-15\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/year/update/1",
+							"host": ["{{base_url}}"],
+							"path": ["year", "update", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Semesters",
+			"item": [
+				{
+					"name": "Get All Semesters",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/semester",
+							"host": ["{{base_url}}"],
+							"path": ["semester"]
+						}
+					}
+				},
+				{
+					"name": "Get Current Semester",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/semester/current",
+							"host": ["{{base_url}}"],
+							"path": ["semester", "current"]
+						}
+					}
+				},
+				{
+					"name": "Create Semester",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"semesterName\": \"Semestre 1\",\n  \"startDate\": \"2024-09-01\",\n  \"endDate\": \"2024-12-31\",\n  \"yearId\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/semester",
+							"host": ["{{base_url}}"],
+							"path": ["semester"]
+						}
+					}
+				},
+				{
+					"name": "Update Semester",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"semesterName\": \"Semestre 1 Updated\",\n  \"endDate\": \"2025-01-15\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/semester/update/1",
+							"host": ["{{base_url}}"],
+							"path": ["semester", "update", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Classes",
+			"item": [
+				{
+					"name": "Get All Classes",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/class",
+							"host": ["{{base_url}}"],
+							"path": ["class"]
+						}
+					}
+				},
+				{
+					"name": "Get Class by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/class/1",
+							"host": ["{{base_url}}"],
+							"path": ["class", "1"]
+						}
+					}
+				},
+				{
+					"name": "Create Class",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"level\": \"L3\",\n  \"department\": \"Informatique\",\n  \"totalStudents\": 50\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/class",
+							"host": ["{{base_url}}"],
+							"path": ["class"]
+						}
+					}
+				},
+				{
+					"name": "Update Class",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"level\": \"M1\",\n  \"totalStudents\": 45\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/class/update/1",
+							"host": ["{{base_url}}"],
+							"path": ["class", "update", "1"]
+						}
+					}
+				},
+				{
+					"name": "Delete Class",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/class/delete/1",
+							"host": ["{{base_url}}"],
+							"path": ["class", "delete", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Courses",
+			"item": [
+				{
+					"name": "Get All Courses",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/course",
+							"host": ["{{base_url}}"],
+							"path": ["course"]
+						}
+					}
+				},
+				{
+					"name": "Get Course by Code",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/course/INF101",
+							"host": ["{{base_url}}"],
+							"path": ["course", "INF101"]
+						}
+					}
+				},
+				{
+					"name": "Create Course",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"courseCode\": \"INF101\",\n  \"courseName\": \"Introduction à l'Informatique\",\n  \"semesterId\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/course",
+							"host": ["{{base_url}}"],
+							"path": ["course"]
+						}
+					}
+				},
+				{
+					"name": "Update Course",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"courseName\": \"Introduction à l'Informatique - Mise à jour\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/course/update/INF101",
+							"host": ["{{base_url}}"],
+							"path": ["course", "update", "INF101"]
+						}
+					}
+				},
+				{
+					"name": "Delete Course",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/course/delete/INF101",
+							"host": ["{{base_url}}"],
+							"path": ["course", "delete", "INF101"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Teachers",
+			"item": [
+				{
+					"name": "Get All Teachers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/teacher",
+							"host": ["{{base_url}}"],
+							"path": ["teacher"]
+						}
+					}
+				},
+				{
+					"name": "Get Teacher by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/teacher/1",
+							"host": ["{{base_url}}"],
+							"path": ["teacher", "1"]
+						}
+					}
+				},
+				{
+					"name": "Create Teacher",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Prof. Martin Nkono\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/teacher",
+							"host": ["{{base_url}}"],
+							"path": ["teacher"]
+						}
+					}
+				},
+				{
+					"name": "Update Teacher",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Prof. Martin Nkono - Titulaire\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/teacher/update/1",
+							"host": ["{{base_url}}"],
+							"path": ["teacher", "update", "1"]
+						}
+					}
+				},
+				{
+					"name": "Delete Teacher",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/teacher/delete/1",
+							"host": ["{{base_url}}"],
+							"path": ["teacher", "delete", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Questions",
+			"item": [
+				{
+					"name": "Get All Questions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/question",
+							"host": ["{{base_url}}"],
+							"path": ["question"]
+						}
+					}
+				},
+				{
+					"name": "Get Questions by Evaluation ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/question/evaluation/1",
+							"host": ["{{base_url}}"],
+							"path": ["question", "evaluation", "1"]
+						}
+					}
+				},
+				{
+					"name": "Create Question",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"text\": \"Quelle est la capitale du Cameroun?\",\n  \"type\": \"MCQ\",\n  \"order\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/question",
+							"host": ["{{base_url}}"],
+							"path": ["question"]
+						}
+					}
+				},
+				{
+					"name": "Update Question",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"text\": \"Quelle est la capitale du Cameroun? (Mise à jour)\",\n  \"order\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/question/update/1",
+							"host": ["{{base_url}}"],
+							"path": ["question", "update", "1"]
+						}
+					}
+				},
+				{
+					"name": "Delete Question",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/question/delete/1",
+							"host": ["{{base_url}}"],
+							"path": ["question", "delete", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Choices",
+			"item": [
+				{
+					"name": "Get All Choices",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/choice",
+							"host": ["{{base_url}}"],
+							"path": ["choice"]
+						}
+					}
+				},
+				{
+					"name": "Get Choices by Question ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/choice/question/1",
+							"host": ["{{base_url}}"],
+							"path": ["choice", "question", "1"]
+						}
+					}
+				},
+				{
+					"name": "Create Choice",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"text\": \"Yaoundé\",\n  \"isCorrect\": true,\n  \"order\": 1,\n  \"questionId\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/choice",
+							"host": ["{{base_url}}"],
+							"path": ["choice"]
+						}
+					}
+				},
+				{
+					"name": "Update Choice",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"text\": \"Yaoundé (Capitale)\",\n  \"isCorrect\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/choice/update/1",
+							"host": ["{{base_url}}"],
+							"path": ["choice", "update", "1"]
+						}
+					}
+				},
+				{
+					"name": "Delete Choice",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/choice/delete/1",
+							"host": ["{{base_url}}"],
+							"path": ["choice", "delete", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Evaluations",
+			"item": [
+				{
+					"name": "Get All Evaluations",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/evaluation",
+							"host": ["{{base_url}}"],
+							"path": ["evaluation"]
+						}
+					}
+				},
+				{
+					"name": "Get Evaluations by Course Code",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/evaluation/course/INF101",
+							"host": ["{{base_url}}"],
+							"path": ["evaluation", "course", "INF101"]
+						}
+					}
+				},
+				{
+					"name": "Create Evaluation Session",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"courseCode\": \"INF101\",\n  \"type\": \"Mid Term\",\n  \"publishedDate\": \"2025-01-15\",\n  \"startTime\": \"10:00:00\",\n  \"endTime\": \"12:00:00\",\n  \"uploadDate\": \"2025-01-10\",\n  \"questions\": [\n    {\n      \"text\": \"Quelle est la capitale du Cameroun?\",\n      \"type\": \"MCQ\",\n      \"order\": 1,\n      \"points\": 5,\n      \"choices\": [\n        {\n          \"text\": \"Yaoundé\",\n          \"isCorrect\": true,\n          \"order\": 1\n        },\n        {\n          \"text\": \"Douala\",\n          \"isCorrect\": false,\n          \"order\": 2\n        },\n        {\n          \"text\": \"Bafoussam\",\n          \"isCorrect\": false,\n          \"order\": 3\n        }\n      ]\n    },\n    {\n      \"text\": \"Expliquez le concept de POO\",\n      \"type\": \"Open\",\n      \"order\": 2,\n      \"points\": 10\n    }\n  ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/evaluation",
+							"host": ["{{base_url}}"],
+							"path": ["evaluation"]
+						}
+					}
+				},
+				{
+					"name": "Update Evaluation",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"publishedDate\": \"2025-01-20\",\n  \"startTime\": \"14:00:00\",\n  \"endTime\": \"16:00:00\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/evaluation/update/1",
+							"host": ["{{base_url}}"],
+							"path": ["evaluation", "update", "1"]
+						}
+					}
+				},
+				{
+					"name": "Delete Evaluation",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/evaluation/delete/1",
+							"host": ["{{base_url}}"],
+							"path": ["evaluation", "delete", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Response Sheets",
+			"item": [
+				{
+					"name": "Get All Response Sheets",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/responseSheet",
+							"host": ["{{base_url}}"],
+							"path": ["responseSheet"]
+						}
+					}
+				},
+				{
+					"name": "Get Response Sheet by Matricule and Evaluation",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/responseSheet/STU2024001/1",
+							"host": ["{{base_url}}"],
+							"path": ["responseSheet", "STU2024001", "1"]
+						}
+					}
+				},
+				{
+					"name": "Create Response Sheet",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"evaluationId\": 1,\n  \"matricule\": \"STU2024001\",\n  \"serverStartTime\": \"10:00:00\",\n  \"clientStartTime\": \"10:00:05\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/responseSheet",
+							"host": ["{{base_url}}"],
+							"path": ["responseSheet"]
+						}
+					}
+				},
+				{
+					"name": "Update Response Sheet",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"clientStartTime\": \"10:01:00\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/responseSheet/update/1",
+							"host": ["{{base_url}}"],
+							"path": ["responseSheet", "update", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Answers",
+			"item": [
+				{
+					"name": "Get All Answers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/answer",
+							"host": ["{{base_url}}"],
+							"path": ["answer"]
+						}
+					}
+				},
+				{
+					"name": "Get Answers by Response Sheet ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/answer/responseSheet/1",
+							"host": ["{{base_url}}"],
+							"path": ["answer", "responseSheet", "1"]
+						}
+					}
+				},
+				{
+					"name": "Create Answer",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"responseSheetId\": 1,\n  \"questionId\": 1,\n  \"selectedOption\": 2,\n  \"openTextResponse\": null\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/answer",
+							"host": ["{{base_url}}"],
+							"path": ["answer"]
+						}
+					}
+				},
+				{
+					"name": "Create Open Answer",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"responseSheetId\": 1,\n  \"questionId\": 2,\n  \"selectedOption\": null,\n  \"openTextResponse\": \"La programmation orientée objet est un paradigme de programmation basé sur les concepts d'objets et de classes.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/answer",
+							"host": ["{{base_url}}"],
+							"path": ["answer"]
+						}
+					}
+				},
+				{
+					"name": "Update Answer",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"selectedOption\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/answer/update/1",
+							"host": ["{{base_url}}"],
+							"path": ["answer", "update", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Notifications",
+			"item": [
+				{
+					"name": "Get All Notifications",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/notification",
+							"host": ["{{base_url}}"],
+							"path": ["notification"]
+						}
+					}
+				},
+				{
+					"name": "Create Notification",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Nouveau Quiz disponible\",\n  \"message\": \"Une évaluation mi-parcours pour le cours INF101 est maintenant disponible.\",\n  \"matricule\": \"STU2024001\",\n  \"type\": \"Published\",\n  \"adminId\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/notification",
+							"host": ["{{base_url}}"],
+							"path": ["notification"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Administrators",
+			"item": [
+				{
+					"name": "Create Administrator",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@univ-yaounde.cm\",\n  \"password\": \"admin123\",\n  \"role\": \"admin\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin",
+							"host": ["{{base_url}}"],
+							"path": ["admin"]
+						}
+					}
+				},
+				{
+					"name": "Update Administrator",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin.updated@univ-yaounde.cm\",\n  \"password\": \"newpassword123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/update/1",
+							"host": ["{{base_url}}"],
+							"path": ["admin", "update", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Device Tokens (Push Notifications)",
+			"item": [
+				{
+					"name": "Register Device Token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"token\": \"fcm-device-token-here-123456789\",\n  \"deviceType\": \"android\",\n  \"deviceId\": \"device-unique-id-123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/device-token/register",
+							"host": ["{{base_url}}"],
+							"path": ["device-token", "register"]
+						}
+					}
+				},
+				{
+					"name": "Unregister Device Token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"token\": \"fcm-device-token-here-123456789\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/device-token/unregister",
+							"host": ["{{base_url}}"],
+							"path": ["device-token", "unregister"]
+						}
+					}
+				},
+				{
+					"name": "Get My Tokens",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/device-token/my-tokens",
+							"host": ["{{base_url}}"],
+							"path": ["device-token", "my-tokens"]
+						}
+					}
+				},
+				{
+					"name": "Update Token Last Used",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"token\": \"fcm-device-token-here-123456789\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/device-token/update-last-used",
+							"host": ["{{base_url}}"],
+							"path": ["device-token", "update-last-used"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Excel Import",
+			"item": [
+				{
+					"name": "Download Template",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/excel/template",
+							"host": ["{{base_url}}"],
+							"path": ["excel", "template"]
+						}
+					}
+				},
+				{
+					"name": "Import Questions from Excel",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "courseCode",
+									"value": "INF101",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/excel/import",
+							"host": ["{{base_url}}"],
+							"path": ["excel", "import"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Offline Support",
+			"item": [
+				{
+					"name": "Save Offline Answer",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"clientId\": \"client-generated-uuid-123\",\n  \"evaluationId\": 1,\n  \"questionId\": 5,\n  \"questionType\": \"MCQ\",\n  \"selectedOption\": 2,\n  \"openTextResponse\": null,\n  \"clientTimestamp\": \"2025-01-01T12:00:00.000Z\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/offline/save",
+							"host": ["{{base_url}}"],
+							"path": ["offline", "save"]
+						}
+					}
+				},
+				{
+					"name": "Save Offline Open Answer",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"clientId\": \"client-generated-uuid-124\",\n  \"evaluationId\": 1,\n  \"questionId\": 6,\n  \"questionType\": \"Open\",\n  \"selectedOption\": null,\n  \"openTextResponse\": \"Ma réponse textuelle pour la question ouverte...\",\n  \"clientTimestamp\": \"2025-01-01T12:05:00.000Z\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/offline/save",
+							"host": ["{{base_url}}"],
+							"path": ["offline", "save"]
+						}
+					}
+				},
+				{
+					"name": "Sync Pending Answer",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/offline/sync/1",
+							"host": ["{{base_url}}"],
+							"path": ["offline", "sync", "1"]
+						}
+					}
+				},
+				{
+					"name": "Sync All Pending Answers",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/offline/sync-all",
+							"host": ["{{base_url}}"],
+							"path": ["offline", "sync-all"]
+						}
+					}
+				},
+				{
+					"name": "Get Pending Answers",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/offline/pending?evaluationId=1",
+							"host": ["{{base_url}}"],
+							"path": ["offline", "pending"],
+							"query": [
+								{
+									"key": "evaluationId",
+									"value": "1",
+									"disabled": true
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Submit Evaluation with Sync",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/offline/submit/1",
+							"host": ["{{base_url}}"],
+							"path": ["offline", "submit", "1"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "auth_token",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
+
