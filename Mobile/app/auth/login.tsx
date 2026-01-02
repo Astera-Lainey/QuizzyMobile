@@ -103,6 +103,9 @@ export default function Login() {
               </TouchableOpacity>
             </View>
 
+            {error ? (
+              <Text style={{ color: 'red',textAlign: 'center', width: '100%' }}>{error}</Text>
+            ) : null}
             {/* Login Link */}
             <TouchableOpacity
               onPress={() => router.push("/auth/signup")}
@@ -113,9 +116,6 @@ export default function Login() {
               </Text>
             </TouchableOpacity>
 
-            {error ? (
-              <Text style={{ color: 'red' }}>{error}</Text>
-            ) : null}
             <Button
               title={loading ? "Logging in..." : "Login"}
               iconPosition="right"
