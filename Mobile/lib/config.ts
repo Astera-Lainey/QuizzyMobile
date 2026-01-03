@@ -13,20 +13,17 @@ export const ENDPOINTS = {
   courses: {
     list: '/course',
     byCode: (code: string) => `/course/${code}`,
+    byStudent: (code: string) => `/course/${code}`,
   },
   evaluations: {
+    // Returns evaluations for the logged-in student.
+    // Each evaluation includes embedded questions and choices (deprecated question/choice endpoints removed from use).
     list: '/evaluation/student',
+    start: (evaluationId:string)=>`/${evaluationId}/start`,
+    revision: '/evaluation/student/revision',
     byCourse: (courseCode: string) => `/evaluation/course/${courseCode}`,
     update: (id: number | string) => `/evaluation/update/${id}`,
     delete: (id: number | string) => `/evaluation/delete/${id}`,
-  },
-  questions: {
-    list: '/question',
-    byEvaluation: (id: number | string) => `/question/evaluation/${id}`,
-  },
-  choices: {
-    list: '/choice',
-    byQuestion: (id: number | string) => `/choice/question/${id}`,
   },
   notifications: {
     list: '/notification',

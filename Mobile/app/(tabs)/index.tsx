@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, FlatList } from 'react-native'
+import { StyleSheet, Text, View, FlatList, TouchableOpacity } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import FlowerCard from '@/components/cards/flowercard';
 import { useTheme } from '@/theme/global';
@@ -7,6 +7,7 @@ import QuizHeader from '@/components/headers/header';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/config';
 import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'expo-router';
 
 const index = () => {
 
@@ -20,6 +21,7 @@ const index = () => {
   const theme = useTheme();
   const { typography } = theme;
   const { student } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     (async () => {
@@ -50,14 +52,20 @@ const index = () => {
       </View>
       
       <Text style={[{fontFamily:typography.fontFamily.heading, marginTop:18},styles.title]}>Recent Tests</Text>
-      {evaluations.slice(0, 3).map((ev, idx) => (
-        <ResultCard
-          key={String(ev?.id || idx)}
-          title={ev?.type ? `${ev.type} — ${ev?.courseCode || ''}` : (ev?.courseCode || 'Evaluation')}
-          progress={ev?.questions?.length || 0}
-          total={ev?.questions?.length || 0}
-        />
-      ))}
+      {evaluations.slice(0, 3).map((ev, idx) => {
+        const id = Number(ev?.id ?? ev?.evaluationId ?? idx);
+        const title = ev?.type ? `${ev.type} — ${ev?.courseCode || ''}` : (ev?.courseCode || 'Evaluation');
+        const qCount = Array.isArray(ev?.questions) ? ev.questions.length : (Number(ev?.questionCount) || 0);
+        return (
+          <TouchableOpacity key={String(id)} activeOpacity={0.8} onPress={() => router.push({ pathname: '/(tabs)/test', params: { evaluationId: String(id) } })}>
+            <ResultCard
+              title={title}
+              progress={qCount}
+              total={qCount}
+            />
+          </TouchableOpacity>
+        );
+      })}
 
       <Text style={[{fontFamily:typography.fontFamily.heading, marginTop:18},styles.title]}>Courses</Text>
       {error ? <Text style={{ color: 'red', marginHorizontal: 15 }}>{error}</Text> : null}

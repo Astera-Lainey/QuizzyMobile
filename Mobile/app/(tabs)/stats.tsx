@@ -97,12 +97,6 @@ export default function Stats() {
           Test Statistics
         </Text>
 
-        {/* TOGGLE TAGS */}
-        <View style={styles.tagsRow}>
-          <TagButton title="Mid Terms" active={active === "midterms"} onPress={() => setActive("midterms")} />
-          <TagButton title="Normal Session" active={active === "normal"} onPress={() => setActive("normal")} />
-        </View>
-
         {/* SCORE CARD */}
         <View style={styles.card}>
           <Text style={[styles.cardTitle, { fontFamily: typography.fontFamily.heading }]}>
@@ -131,25 +125,6 @@ export default function Stats() {
             <Ionicons name="play-circle" size={22} color={colors.secondary} />
             <Text style={[styles.recommendText, { fontFamily: typography.fontFamily.body }]}>
               View All Scores
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* GRADE SUMMARY */}
-        <View style={styles.card}>
-          <Text style={[styles.cardTitle, { fontFamily: typography.fontFamily.heading }]}>
-            Grade Summary
-          </Text>
-
-          <View style={styles.chartPlaceholder}>
-            <Text style={[styles.chartText, { fontFamily: typography.fontFamily.body }]}>
-              📊 {active === "midterms" ? "Midterm" : "Normal"} Performance
-            </Text>
-          </View>
-
-          <TouchableOpacity style={styles.calculateBtn} onPress={() => setAvgModal(true)}>
-            <Text style={[styles.calculateText, { fontFamily: typography.fontFamily.heading }]}>
-              Calculate Average
             </Text>
           </TouchableOpacity>
         </View>

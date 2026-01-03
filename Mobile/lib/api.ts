@@ -23,9 +23,20 @@ async function request<T>(
   });
 
   const text = await res.text();
-  const data = text ? JSON.parse(text) : null;
+  let data: any = null;
+  if (text) {
+    try {
+      data = JSON.parse(text);
+    } catch (err) {
+      // Non-JSON response; on error status, surface raw text; on success, throw a clearer error
+      if (!res.ok) {
+        throw new Error(text || res.statusText);
+      }
+      throw new Error('Invalid JSON response');
+    }
+  }
   if (!res.ok) {
-    const message = (data as any)?.message || (data as any)?.error || res.statusText;
+    const message = (data as any)?.message || (data as any)?.error || text || res.statusText;
     throw new Error(message);
   }
   return data as T;

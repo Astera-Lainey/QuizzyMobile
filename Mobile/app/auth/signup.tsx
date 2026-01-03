@@ -161,7 +161,7 @@ export default function Signup() {
                                 activeOpacity={0.8}
                             >
                                 <Text style={{
-                                    color: className ? colors.text : '#888',
+                                    color: colors.primary,
                                     fontFamily: typography.fontFamily.body
                                 }}>
                                     {classesLoading ? 'Loading classes...' : (className || 'Select Class')}
