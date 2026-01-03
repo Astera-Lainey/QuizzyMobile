@@ -10,7 +10,7 @@ import * as XLSX from 'xlsx';
 import { TeacherService } from '../../services/teacher';
 
 interface Teacher {
-  id: number;
+  teacherId: number;
   firstName: string;
   lastName: string;
   email: string;
@@ -49,18 +49,18 @@ interface FileTypeInfo {
   providers: [TeacherService]
 })
 export class Teachers implements OnInit {
-  useMockData = true;
-  
+  useMockData = false;
+
   showToast = false;
   toastMessage = '';
   toastType: 'success' | 'error' | 'info' = 'info';
   toastTimeout: any;
-  
+
   showAddModal = false;
   showEditModal = false;
   showImportModal = false;
   showConfirmModal = false;
-  
+
   confirmModalData: {
     title: string;
     message: string;
@@ -78,7 +78,7 @@ export class Teachers implements OnInit {
     onConfirm: () => {},
     onCancel: () => {}
   };
-  
+
   newTeacher = {
     firstName: '',
     lastName: '',
@@ -87,15 +87,15 @@ export class Teachers implements OnInit {
   };
 
   editTeacherData = {
-    id: 0,
+    teacherId: 0,
     firstName: '',
     lastName: '',
     email: '',
     phoneNumber: '',
   };
-  
+
   isSidebarCollapsed = false;
-  
+
   importFile: File | null = null;
   importProgress = 0;
   isImporting = false;
@@ -103,22 +103,22 @@ export class Teachers implements OnInit {
   importFileName = '';
   importPreviewData: any[] = [];
   importHeaders: string[] = [];
-  
+
   fileTypeInfo: FileTypeInfo | null = null;
-  
+
   readonly ACCEPTED_FILE_TYPES = '.csv,.xls,.xlsx,.xlsm,.xlsb,.ods,.xlt,.xltx,.xltm,.xlam';
-  
+
   currentUser: User = {
     id: 1,
     username: 'admin',
     email: 'admin@university.edu',
   };
-  
+
   searchTerm = '';
-  
+
   teachers: TeacherTableItem[] = [];
   filteredTeachers: TeacherTableItem[] = [];
-  
+
   pagination = {
     currentPage: 1,
     itemsPerPage: 5,
@@ -134,17 +134,17 @@ export class Teachers implements OnInit {
     private teacherService: TeacherService,
     private cdr: ChangeDetectorRef
   ) {
-    
+
     this.updatePagination();
   }
 
   ngOnInit() {
     this.loadData();
   }
-  
+
   onSidebarStateChange(isCollapsed: boolean) {
     this.isSidebarCollapsed = isCollapsed;
-    
+
     setTimeout(() => this.cdr.detectChanges(), 0);
   }
 
@@ -153,38 +153,38 @@ export class Teachers implements OnInit {
       ...teacher,
       fullName: `${teacher.firstName} ${teacher.lastName}`
     }));
-    
+
     this.applyFilters();
   }
-  
+
   loadData() {
     if (this.useMockData) {
-      
+
       this.loadMockData();
     } else {
-     
+
       this.loadFromAPI();
     }
   }
 
   loadMockData() {
-    
+
     setTimeout(() => {
       const mockTeachers: Teacher[] = [
-        { id: 1, firstName: 'John', lastName: 'Doe', email: 'john.doe@university.edu', phoneNumber: '+1234567890' },
-        { id: 2, firstName: 'Jane', lastName: 'Smith', email: 'jane.smith@university.edu', phoneNumber: '+1234567891' },
-        { id: 3, firstName: 'Robert', lastName: 'Johnson', email: 'robert.j@university.edu', phoneNumber: '+1234567892' },
-        { id: 4, firstName: 'Alice', lastName: 'Williams', email: 'alice.w@university.edu', phoneNumber: '+1234567893' },
-        { id: 5, firstName: 'Michael', lastName: 'Brown', email: 'michael.b@university.edu', phoneNumber: '+1234567894' },
-        { id: 6, firstName: 'Sarah', lastName: 'Davis', email: 'sarah.d@university.edu', phoneNumber: '+1234567895' },
-        { id: 7, firstName: 'David', lastName: 'Miller', email: 'david.m@university.edu', phoneNumber: '+1234567896' },
-        { id: 8, firstName: 'Emily', lastName: 'Wilson', email: 'emily.w@university.edu', phoneNumber: '+1234567897' },
-        { id: 9, firstName: 'James', lastName: 'Taylor', email: 'james.t@university.edu', phoneNumber: '+1234567898' },
-        { id: 10, firstName: 'Olivia', lastName: 'Anderson', email: 'olivia.a@university.edu', phoneNumber: '+1234567899' }
+        { teacherId: 1, firstName: 'John', lastName: 'Doe', email: 'john.doe@university.edu', phoneNumber: '+1234567890' },
+        { teacherId: 2, firstName: 'Jane', lastName: 'Smith', email: 'jane.smith@university.edu', phoneNumber: '+1234567891' },
+        { teacherId: 3, firstName: 'Robert', lastName: 'Johnson', email: 'robert.j@university.edu', phoneNumber: '+1234567892' },
+        { teacherId: 4, firstName: 'Alice', lastName: 'Williams', email: 'alice.w@university.edu', phoneNumber: '+1234567893' },
+        { teacherId: 5, firstName: 'Michael', lastName: 'Brown', email: 'michael.b@university.edu', phoneNumber: '+1234567894' },
+        { teacherId: 6, firstName: 'Sarah', lastName: 'Davis', email: 'sarah.d@university.edu', phoneNumber: '+1234567895' },
+        { teacherId: 7, firstName: 'David', lastName: 'Miller', email: 'david.m@university.edu', phoneNumber: '+1234567896' },
+        { teacherId: 8, firstName: 'Emily', lastName: 'Wilson', email: 'emily.w@university.edu', phoneNumber: '+1234567897' },
+        { teacherId: 9, firstName: 'James', lastName: 'Taylor', email: 'james.t@university.edu', phoneNumber: '+1234567898' },
+        { teacherId: 10, firstName: 'Olivia', lastName: 'Anderson', email: 'olivia.a@university.edu', phoneNumber: '+1234567899' }
       ];
       this.combineTeacherData(mockTeachers);
       this.showToastMessage('Mock teachers loaded', 'info');
-      
+
       setTimeout(() => this.cdr.detectChanges(), 0);
     }, 200);
   }
@@ -194,14 +194,14 @@ export class Teachers implements OnInit {
       next: (teachers) => {
         this.combineTeacherData(teachers);
         this.showToastMessage('Teachers loaded successfully', 'success');
-        
+
         setTimeout(() => this.cdr.detectChanges(), 0);
       },
       error: (error) => {
         console.error('Error loading teachers:', error);
-       
+
         this.showToastMessage('Failed to load teachers from server. Please check your connection and try again.', 'error');
-       
+
         this.teachers = [];
         this.applyFilters();
         setTimeout(() => this.cdr.detectChanges(), 0);
@@ -211,10 +211,10 @@ export class Teachers implements OnInit {
 
   applyFilters() {
     let filtered = [...this.teachers];
-    
+
     if (this.searchTerm.trim() !== '') {
       const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(teacher => 
+      filtered = filtered.filter(teacher =>
         teacher.firstName.toLowerCase().includes(term) ||
         teacher.lastName.toLowerCase().includes(term) ||
         teacher.fullName.toLowerCase().includes(term) ||
@@ -222,10 +222,10 @@ export class Teachers implements OnInit {
         teacher.phoneNumber.toLowerCase().includes(term)
       );
     }
-    
+
     this.filteredTeachers = filtered;
     this.updatePagination();
-    
+
     setTimeout(() => this.cdr.detectChanges(), 0);
   }
 
@@ -239,20 +239,20 @@ export class Teachers implements OnInit {
     this.pagination.totalPages = Math.ceil(this.pagination.totalItems / this.pagination.itemsPerPage);
     this.pagination.startIndex = Math.min((this.pagination.currentPage - 1) * this.pagination.itemsPerPage + 1, this.pagination.totalItems);
     this.pagination.endIndex = Math.min(this.pagination.currentPage * this.pagination.itemsPerPage, this.pagination.totalItems);
-    
+
     this.pagination.pages = [];
     const maxPagesToShow = 5;
     let startPage = Math.max(1, this.pagination.currentPage - Math.floor(maxPagesToShow / 2));
     let endPage = Math.min(this.pagination.totalPages, startPage + maxPagesToShow - 1);
-    
+
     if (endPage - startPage + 1 < maxPagesToShow) {
       startPage = Math.max(1, endPage - maxPagesToShow + 1);
     }
-    
+
     for (let i = startPage; i <= endPage; i++) {
       this.pagination.pages.push(i);
     }
-    
+
     setTimeout(() => this.cdr.detectChanges(), 0);
   }
 
@@ -273,7 +273,7 @@ export class Teachers implements OnInit {
     this.pagination.currentPage = 1;
     this.updatePagination();
   }
-  
+
   openConfirmModal(config: {
     title: string;
     message: string;
@@ -293,13 +293,13 @@ export class Teachers implements OnInit {
       onCancel: config.onCancel || (() => {})
     };
     this.showConfirmModal = true;
-    
+
     setTimeout(() => this.cdr.detectChanges(), 0);
   }
 
   closeConfirmModal() {
     this.showConfirmModal = false;
-    
+
     setTimeout(() => this.cdr.detectChanges(), 0);
   }
 
@@ -317,19 +317,19 @@ export class Teachers implements OnInit {
 
   editTeacher(teacher: TeacherTableItem) {
     this.editTeacherData = {
-      id: teacher.id,
+      teacherId: teacher.teacherId,
       firstName: teacher.firstName,
       lastName: teacher.lastName,
       email: teacher.email,
       phoneNumber: teacher.phoneNumber
     };
     this.showEditModal = true;
-    
+
     setTimeout(() => this.cdr.detectChanges(), 0);
   }
 
   saveEditTeacher() {
-    if (!this.editTeacherData.firstName || !this.editTeacherData.lastName || 
+    if (!this.editTeacherData.firstName || !this.editTeacherData.lastName ||
         !this.editTeacherData.email || !this.editTeacherData.phoneNumber) {
       this.showToastMessage('Please fill all required fields!', 'error');
       return;
@@ -348,7 +348,7 @@ export class Teachers implements OnInit {
     }
 
     const teacher: Teacher = {
-      id: this.editTeacherData.id,
+      teacherId: this.editTeacherData.teacherId,
       firstName: this.editTeacherData.firstName,
       lastName: this.editTeacherData.lastName,
       email: this.editTeacherData.email,
@@ -356,7 +356,7 @@ export class Teachers implements OnInit {
     };
 
     if (this.useMockData) {
-      const index = this.teachers.findIndex(t => t.id === teacher.id);
+      const index = this.teachers.findIndex(t => t.teacherId === teacher.teacherId);
       if (index !== -1) {
         this.teachers[index] = { ...teacher, fullName: `${teacher.firstName} ${teacher.lastName}` };
         this.showToastMessage(`${teacher.firstName} ${teacher.lastName} updated successfully!`, 'success');
@@ -364,29 +364,29 @@ export class Teachers implements OnInit {
     } else {
       this.updateTeacherInDatabase(teacher);
     }
-    
+
     this.closeEditModal();
     this.applyFilters();
-    
+
     setTimeout(() => this.cdr.detectChanges(), 0);
   }
 
   updateTeacherInDatabase(teacher: Teacher) {
-    this.teacherService.updateTeacher(teacher.id, teacher).subscribe({
+    this.teacherService.updateTeacher(teacher.teacherId, teacher).subscribe({
       next: (updatedTeacher) => {
-        const index = this.teachers.findIndex(t => t.id === teacher.id);
+        const index = this.teachers.findIndex(t => t.teacherId === teacher.teacherId);
         if (index !== -1) {
           this.teachers[index] = { ...updatedTeacher, fullName: `${updatedTeacher.firstName} ${updatedTeacher.lastName}` };
         }
         this.showToastMessage(`${teacher.firstName} ${teacher.lastName} updated successfully!`, 'success');
         this.applyFilters();
-        
+
         setTimeout(() => this.cdr.detectChanges(), 0);
       },
       error: (error) => {
         console.error('Error updating teacher:', error);
         this.showToastMessage('Failed to update teacher', 'error');
-        
+
         setTimeout(() => this.cdr.detectChanges(), 0);
       }
     });
@@ -400,13 +400,13 @@ export class Teachers implements OnInit {
       type: 'delete',
       onConfirm: () => {
         if (this.useMockData) {
-          this.teachers = this.teachers.filter(t => t.id !== teacher.id);
+          this.teachers = this.teachers.filter(t => t.teacherId !== teacher.teacherId);
           this.showToastMessage(`${teacher.fullName} has been deleted!`, 'success');
           this.applyFilters();
-          
+
           setTimeout(() => this.cdr.detectChanges(), 0);
         } else {
-          this.deleteTeacherFromDatabase(teacher.id, teacher.fullName);
+          this.deleteTeacherFromDatabase(teacher.teacherId, teacher.fullName);
         }
       }
     });
@@ -415,21 +415,21 @@ export class Teachers implements OnInit {
   deleteTeacherFromDatabase(teacherId: number, teacherName: string) {
     this.teacherService.deleteTeacher(teacherId).subscribe({
       next: () => {
-        this.teachers = this.teachers.filter(t => t.id !== teacherId);
+        this.teachers = this.teachers.filter(t => t.teacherId !== teacherId);
         this.showToastMessage(`${teacherName} has been deleted!`, 'success');
         this.applyFilters();
-        
+
         setTimeout(() => this.cdr.detectChanges(), 0);
       },
       error: (error) => {
         console.error('Error deleting teacher:', error);
         this.showToastMessage('Failed to delete teacher', 'error');
-        
+
         setTimeout(() => this.cdr.detectChanges(), 0);
       }
     });
   }
-  
+
   openAddModal() {
     this.newTeacher = {
       firstName: '',
@@ -438,24 +438,24 @@ export class Teachers implements OnInit {
       phoneNumber: '',
     };
     this.showAddModal = true;
-    
+
     setTimeout(() => this.cdr.detectChanges(), 0);
   }
 
   closeAddModal() {
     this.showAddModal = false;
-    
+
     setTimeout(() => this.cdr.detectChanges(), 0);
   }
 
   closeEditModal() {
     this.showEditModal = false;
-    
+
     setTimeout(() => this.cdr.detectChanges(), 0);
   }
 
   saveTeacher() {
-    if (!this.newTeacher.firstName || !this.newTeacher.lastName || 
+    if (!this.newTeacher.firstName || !this.newTeacher.lastName ||
         !this.newTeacher.email || !this.newTeacher.phoneNumber) {
       this.showToastMessage('Please fill all required fields!', 'error');
       return;
@@ -474,7 +474,7 @@ export class Teachers implements OnInit {
     }
 
     const newTeacher: Teacher = {
-      id: 0, 
+      teacherId: 0,
       firstName: this.newTeacher.firstName,
       lastName: this.newTeacher.lastName,
       email: this.newTeacher.email,
@@ -482,16 +482,16 @@ export class Teachers implements OnInit {
     };
 
     if (this.useMockData) {
-      newTeacher.id = Math.max(...this.teachers.map(t => t.id), 0) + 1;
+      newTeacher.teacherId = Math.max(...this.teachers.map(t => t.teacherId), 0) + 1;
       this.teachers.unshift({ ...newTeacher, fullName: `${newTeacher.firstName} ${newTeacher.lastName}` });
       this.showToastMessage(`${this.newTeacher.firstName} ${this.newTeacher.lastName} added successfully!`, 'success');
     } else {
       this.saveTeacherToDatabase(newTeacher);
     }
-    
+
     this.closeAddModal();
     this.applyFilters();
-    
+
     setTimeout(() => this.cdr.detectChanges(), 0);
   }
 
@@ -501,18 +501,18 @@ export class Teachers implements OnInit {
         this.teachers.unshift({ ...createdTeacher, fullName: `${createdTeacher.firstName} ${createdTeacher.lastName}` });
         this.showToastMessage(`${teacher.firstName} ${teacher.lastName} added successfully!`, 'success');
         this.applyFilters();
-        
+
         setTimeout(() => this.cdr.detectChanges(), 0);
       },
       error: (error) => {
         console.error('Error adding teacher:', error);
         this.showToastMessage('Failed to add teacher', 'error');
-        
+
         setTimeout(() => this.cdr.detectChanges(), 0);
       }
     });
   }
-  
+
   importTable() {
     this.showImportModal = true;
     this.importResult = null;
@@ -522,7 +522,7 @@ export class Teachers implements OnInit {
     this.importFile = null;
     this.importFileName = '';
     this.fileTypeInfo = null;
-    
+
     setTimeout(() => this.cdr.detectChanges(), 0);
   }
 
@@ -535,7 +535,7 @@ export class Teachers implements OnInit {
     this.importPreviewData = [];
     this.importHeaders = [];
     this.fileTypeInfo = null;
-    
+
     setTimeout(() => this.cdr.detectChanges(), 0);
   }
 
@@ -543,17 +543,17 @@ export class Teachers implements OnInit {
     const file = event.target.files[0];
     if (file) {
       this.fileTypeInfo = this.detectFileType(file);
-      
+
       if (this.fileTypeInfo.type === 'unknown') {
         this.showToastMessage('Please select a CSV or Excel file (CSV, XLS, XLSX, XLSM, XLSB, ODS, XLT, XLTX, XLTM, XLAM)', 'error');
         return;
       }
-      
+
       this.importFile = file;
       this.importFileName = file.name;
-      
+
       this.previewFile(file);
-      
+
       setTimeout(() => this.cdr.detectChanges(), 0);
     }
   }
@@ -561,42 +561,42 @@ export class Teachers implements OnInit {
   detectFileType(file: File): FileTypeInfo {
     const extension = file.name.split('.').pop()?.toLowerCase() || '';
     const mimeType = file.type.toLowerCase();
-    
+
     if (extension === 'csv' || mimeType.includes('csv')) {
       return { type: 'csv', extension, mimeType };
     }
-    
+
     const excelExtensions = ['xls', 'xlsx', 'xlsm', 'xlsb', 'ods', 'xlt', 'xltx', 'xltm', 'xlam'];
     const excelMimeKeywords = ['excel', 'spreadsheet', 'openxmlformats', 'oasis', 'ms-excel'];
-    
-    if (excelExtensions.includes(extension) || 
+
+    if (excelExtensions.includes(extension) ||
         excelMimeKeywords.some(keyword => mimeType.includes(keyword))) {
       return { type: 'excel', extension, mimeType };
     }
-    
+
     return { type: 'unknown', extension, mimeType };
   }
 
   previewFile(file: File) {
     const reader = new FileReader();
-    
+
     reader.onload = (e: any) => {
       const content = e.target.result;
-      
+
       if (this.fileTypeInfo?.type === 'csv') {
         this.previewCSV(content);
       } else if (this.fileTypeInfo?.type === 'excel') {
         this.previewExcel(content);
       }
-      
+
       setTimeout(() => this.cdr.detectChanges(), 0);
     };
-    
+
     reader.onerror = () => {
       this.showToastMessage('Error reading file', 'error');
       setTimeout(() => this.cdr.detectChanges(), 0);
     };
-    
+
     if (this.fileTypeInfo?.type === 'csv') {
       reader.readAsText(file);
     } else {
@@ -607,22 +607,22 @@ export class Teachers implements OnInit {
   previewCSV(content: string) {
     try {
       const lines = content.split('\n');
-      
+
       if (lines.length > 0) {
         this.importHeaders = lines[0].split(',').map((h: string) => h.trim());
-        
+
         const requiredHeaders = ['firstName', 'lastName', 'email', 'phoneNumber'];
         const missingHeaders = requiredHeaders.filter(h => !this.importHeaders.includes(h));
-        
+
         if (missingHeaders.length > 0) {
           this.showToastMessage(`Missing headers: ${missingHeaders.join(', ')}. Found: ${this.importHeaders.join(', ')}`, 'error');
           this.resetImport();
           return;
         }
-        
+
         this.importPreviewData = [];
         const previewRows = Math.min(6, lines.length);
-        
+
         for (let i = 1; i < previewRows; i++) {
           if (lines[i].trim()) {
             const values = lines[i].split(',').map((v: string) => v.trim());
@@ -633,7 +633,7 @@ export class Teachers implements OnInit {
             this.importPreviewData.push(row);
           }
         }
-        
+
         this.showToastMessage('CSV file preview loaded successfully', 'success');
       }
     } catch (error) {
@@ -649,22 +649,22 @@ export class Teachers implements OnInit {
       const firstSheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[firstSheetName];
       const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-      
+
       if (jsonData.length > 0) {
         this.importHeaders = (jsonData[0] as any[]).map(h => String(h).trim());
-        
+
         const requiredHeaders = ['firstName', 'lastName', 'email', 'phoneNumber'];
         const missingHeaders = requiredHeaders.filter(h => !this.importHeaders.includes(h));
-        
+
         if (missingHeaders.length > 0) {
           this.showToastMessage(`Missing headers: ${missingHeaders.join(', ')}. Found: ${this.importHeaders.join(', ')}`, 'error');
           this.resetImport();
           return;
         }
-        
+
         this.importPreviewData = [];
         const previewRows = Math.min(6, jsonData.length);
-        
+
         for (let i = 1; i < previewRows; i++) {
           const rowData = jsonData[i] as any[];
           if (rowData && rowData.length > 0) {
@@ -675,7 +675,7 @@ export class Teachers implements OnInit {
             this.importPreviewData.push(row);
           }
         }
-        
+
         this.showToastMessage('Excel file preview loaded successfully', 'success');
       }
     } catch (error) {
@@ -691,7 +691,7 @@ export class Teachers implements OnInit {
     this.importPreviewData = [];
     this.importHeaders = [];
     this.fileTypeInfo = null;
-    
+
     setTimeout(() => this.cdr.detectChanges(), 0);
   }
 
@@ -705,7 +705,7 @@ export class Teachers implements OnInit {
     this.importProgress = 10;
 
     this.simulateImport();
-    
+
     setTimeout(() => this.cdr.detectChanges(), 0);
   }
 
@@ -719,18 +719,18 @@ export class Teachers implements OnInit {
       };
       this.isImporting = false;
       this.showToastMessage('No file selected', 'error');
-      
+
       setTimeout(() => this.cdr.detectChanges(), 0);
       return;
     }
 
     const reader = new FileReader();
-    
+
     reader.onload = (e: any) => {
       const content = e.target.result;
       this.processFileContent(content);
     };
-    
+
     reader.onerror = () => {
       this.importResult = {
         success: false,
@@ -740,10 +740,10 @@ export class Teachers implements OnInit {
       };
       this.isImporting = false;
       this.showToastMessage('Failed to read file', 'error');
-      
+
       setTimeout(() => this.cdr.detectChanges(), 0);
     };
-    
+
     if (this.fileTypeInfo.type === 'csv') {
       reader.readAsText(this.importFile);
     } else {
@@ -753,29 +753,29 @@ export class Teachers implements OnInit {
 
   processFileContent(content: string | ArrayBuffer) {
     this.importProgress = 30;
-    
+
     setTimeout(() => this.cdr.detectChanges(), 0);
-    
+
     const processCSV = (csvContent: string) => {
       const lines = csvContent.split('\n');
       const importedTeachers: Teacher[] = [];
       const errors: string[] = [];
-      
+
       for (let i = 1; i < lines.length; i++) {
         if (lines[i].trim()) {
           this.importProgress = 30 + Math.floor((i / lines.length) * 60);
           setTimeout(() => this.cdr.detectChanges(), 0);
-          
+
           const values = lines[i].split(',').map((v: string) => v.trim());
           try {
             const firstName = values[0] || '';
             const lastName = values[1] || '';
             const email = values[2] || '';
             const phoneNumber = values[3] || '';
-            
+
             if (firstName && lastName && email) {
               importedTeachers.push({
-                id: 0, 
+                teacherId: 0,
                 firstName,
                 lastName,
                 email,
@@ -798,24 +798,24 @@ export class Teachers implements OnInit {
         const firstSheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[firstSheetName];
         const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-        
+
         const importedTeachers: Teacher[] = [];
         const errors: string[] = [];
-        
+
         for (let i = 1; i < jsonData.length; i++) {
           this.importProgress = 30 + Math.floor((i / jsonData.length) * 60);
           setTimeout(() => this.cdr.detectChanges(), 0);
-          
+
           const rowData = jsonData[i] as any[];
           try {
             const firstName = String(rowData[0] || '').trim();
             const lastName = String(rowData[1] || '').trim();
             const email = String(rowData[2] || '').trim();
             const phoneNumber = String(rowData[3] || '').trim();
-            
+
             if (firstName && lastName && email) {
               importedTeachers.push({
-                id: 0, 
+                teacherId: 0,
                 firstName,
                 lastName,
                 email,
@@ -836,19 +836,19 @@ export class Teachers implements OnInit {
 
     const completeImport = (importedTeachers: Teacher[], errors: string[]) => {
       this.importProgress = 95;
-      
+
       setTimeout(() => this.cdr.detectChanges(), 0);
-      
-      
+
+
       if (!this.useMockData) {
         this.bulkCreateTeachers(importedTeachers, errors);
       } else {
-       
+
         importedTeachers.forEach(teacher => {
-          teacher.id = Math.max(...this.teachers.map(t => t.id), 0) + 1;
+          teacher.teacherId = Math.max(...this.teachers.map(t => t.teacherId), 0) + 1;
           this.teachers.unshift({ ...teacher, fullName: `${teacher.firstName} ${teacher.lastName}` });
         });
-        
+
         this.importResult = {
           success: true,
           message: `Successfully imported ${importedTeachers.length} teachers from ${this.fileTypeInfo?.extension.toUpperCase()} file`,
@@ -856,14 +856,14 @@ export class Teachers implements OnInit {
           failedCount: errors.length,
           errors: errors.length > 0 ? errors : undefined
         };
-        
+
         this.importProgress = 100;
         this.isImporting = false;
-        
+
         this.applyFilters();
-        
+
         setTimeout(() => this.cdr.detectChanges(), 0);
-        
+
         if (errors.length === 0) {
           this.showToastMessage(`Imported ${importedTeachers.length} teachers successfully!`, 'success');
         } else {
@@ -890,7 +890,7 @@ export class Teachers implements OnInit {
       };
       this.isImporting = false;
       this.showToastMessage('Failed to process file. Please check the format.', 'error');
-      
+
       setTimeout(() => this.cdr.detectChanges(), 0);
     }
   }
@@ -899,17 +899,17 @@ export class Teachers implements OnInit {
     let completed = 0;
     const successfulImports: Teacher[] = [];
     const importErrors: string[] = [...errors];
-    
+
     teachers.forEach((teacher, index) => {
       this.teacherService.createTeacher(teacher).subscribe({
         next: (createdTeacher) => {
           this.teachers.unshift({ ...createdTeacher, fullName: `${createdTeacher.firstName} ${createdTeacher.lastName}` });
           successfulImports.push(createdTeacher);
           completed++;
-          
+
           this.importProgress = 30 + Math.floor((completed / teachers.length) * 60);
           setTimeout(() => this.cdr.detectChanges(), 0);
-          
+
           if (completed === teachers.length) {
             this.finalizeImport(successfulImports, importErrors);
           }
@@ -917,10 +917,10 @@ export class Teachers implements OnInit {
         error: (error) => {
           importErrors.push(`Row ${index + 2}: ${error.message}`);
           completed++;
-          
+
           this.importProgress = 30 + Math.floor((completed / teachers.length) * 60);
           setTimeout(() => this.cdr.detectChanges(), 0);
-          
+
           if (completed === teachers.length) {
             this.finalizeImport(successfulImports, importErrors);
           }
@@ -937,14 +937,14 @@ export class Teachers implements OnInit {
       failedCount: errors.length,
       errors: errors.length > 0 ? errors : undefined
     };
-    
+
     this.importProgress = 100;
     this.isImporting = false;
-    
+
     this.applyFilters();
-    
+
     setTimeout(() => this.cdr.detectChanges(), 0);
-    
+
     if (errors.length === 0) {
       this.showToastMessage(`Imported ${successfulImports.length} teachers successfully!`, 'success');
     } else if (successfulImports.length > 0) {
@@ -962,11 +962,11 @@ export class Teachers implements OnInit {
         ['Jane', 'Smith', 'jane.smith@university.edu', '+1234567891'],
         ['Robert', 'Johnson', 'robert.j@university.edu', '+1234567892']
       ];
-      
+
       const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Teachers Template');
-      
+
       const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
       const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const url = window.URL.createObjectURL(blob);
@@ -975,14 +975,14 @@ export class Teachers implements OnInit {
       a.download = 'teachers_import_template.xlsx';
       a.click();
       window.URL.revokeObjectURL(url);
-      
+
       this.showToastMessage('Excel template downloaded', 'info');
-      
+
       setTimeout(() => this.cdr.detectChanges(), 0);
     } catch (error) {
       console.error('Error creating template:', error);
       this.showToastMessage('Failed to create template', 'error');
-      
+
       setTimeout(() => this.cdr.detectChanges(), 0);
     }
   }
@@ -995,7 +995,7 @@ export class Teachers implements OnInit {
         email: teacher.email,
         phoneNumber: teacher.phoneNumber,
       }));
-      
+
       const worksheetData = [
         ['First Name', 'Last Name', 'Email', 'Phone Number'],
         ...exportData.map(item => [
@@ -1005,11 +1005,11 @@ export class Teachers implements OnInit {
           item.phoneNumber
         ])
       ];
-      
+
       const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Teachers');
-      
+
       const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
       const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const url = window.URL.createObjectURL(blob);
@@ -1018,22 +1018,22 @@ export class Teachers implements OnInit {
       a.download = `teachers_${new Date().toISOString().split('T')[0]}.xlsx`;
       a.click();
       window.URL.revokeObjectURL(url);
-      
+
       this.showToastMessage('Exported to Excel successfully!', 'success');
-      
+
       setTimeout(() => this.cdr.detectChanges(), 0);
     } catch (error) {
       console.error('Error exporting to Excel:', error);
       this.showToastMessage('Failed to export', 'error');
-      
+
       setTimeout(() => this.cdr.detectChanges(), 0);
     }
   }
- 
+
   onProfileUpdate(updatedUser: User) {
     this.currentUser = updatedUser;
     this.showToastMessage('Profile updated successfully!', 'success');
-    
+
     setTimeout(() => this.cdr.detectChanges(), 0);
   }
 
@@ -1048,31 +1048,31 @@ export class Teachers implements OnInit {
         setTimeout(() => {
           this.router.navigate(['/login']);
         }, 1000);
-        
+
         setTimeout(() => this.cdr.detectChanges(), 0);
       }
     });
   }
-  
+
   showToastMessage(message: string, type: 'success' | 'error' | 'info') {
     this.toastMessage = message;
     this.toastType = type;
     this.showToast = true;
-    
+
     if (this.toastTimeout) {
       clearTimeout(this.toastTimeout);
     }
-    
+
     this.toastTimeout = setTimeout(() => {
       this.hideToast();
     }, 3000);
-    
+
     setTimeout(() => this.cdr.detectChanges(), 0);
   }
 
   hideToast() {
     this.showToast = false;
-    
+
     setTimeout(() => this.cdr.detectChanges(), 0);
   }
 }

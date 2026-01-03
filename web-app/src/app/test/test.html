@@ -1,23 +1,23 @@
 <div class="app-container">
-  
+
   <div class="sidebar-container">
-    <app-sidebar 
+    <app-sidebar
       (sidebarStateChange)="onSidebarStateChange($event)">
     </app-sidebar>
   </div>
-  
+
   <!-- Main content  -->
   <div class="main-content-wrapper" [style.margin-left.px]="isSidebarCollapsed ? 80 : 280">
-   
-    <app-navbar 
+
+    <app-navbar
       [isSidebarCollapsed]="isSidebarCollapsed"
       [pageTitle]="'Evaluation Management'"
       [currentUser]="currentUser"
       (logout)="logout()"
       (profileUpdate)="onProfileUpdate($event)">
     </app-navbar>
-    
-   
+
+
     <div class="toast-container" *ngIf="showToast" [class]="'toast-' + toastType">
       <div class="toast-icon">
         <i [class]="toastType === 'success' ? 'fas fa-check-circle' : toastType === 'error' ? 'fas fa-times-circle' : 'fas fa-info-circle'"></i>
@@ -27,7 +27,7 @@
         <i class="fas fa-times"></i>
       </button>
     </div>
-    
+
     <!-- Add Evaluation Modal -->
     <div class="modal-overlay" *ngIf="showAddModal">
       <div class="modal-container" style="max-width: 700px;">
@@ -41,14 +41,14 @@
           <form (ngSubmit)="saveEvaluation()">
             <div class="form-group">
               <label for="evalDate">Date *</label>
-              <input type="date" id="evalDate" class="form-control" 
-                     [(ngModel)]="newEvaluation.publishedDate" 
+              <input type="date" id="evalDate" class="form-control"
+                     [(ngModel)]="newEvaluation.publishedDate"
                      [ngModelOptions]="{standalone: true}" required>
             </div>
            <div class="form-group">
             <label for="evalType">Evaluation Type *</label>
-            <select id="evalType" class="form-control" 
-                    [(ngModel)]="newEvaluation.type" 
+            <select id="evalType" class="form-control"
+                    [(ngModel)]="newEvaluation.type"
                     [ngModelOptions]="{standalone: true}" required>
               <option value="">Select Type</option>
               <option *ngFor="let type of evalTypes" [value]="type">
@@ -59,8 +59,8 @@
 
             <div class="form-group">
               <label for="evalCourse">Course Code *</label>
-              <select id="evalCourse" class="form-control" 
-                      [(ngModel)]="newEvaluation.courseCode" 
+              <select id="evalCourse" class="form-control"
+                      [(ngModel)]="newEvaluation.courseCode"
                       [ngModelOptions]="{standalone: true}" required>
                 <option value="">Select Course Code</option>
                 <option *ngFor="let course of availableCourses" [value]="course.code">
@@ -70,14 +70,14 @@
             </div>
             <div class="form-group">
               <label for="evalStartTime">Start Time *</label>
-              <input type="time" id="evalStartTime" class="form-control" 
-                     [(ngModel)]="newEvaluation.startTime" 
+              <input type="time" id="evalStartTime" class="form-control"
+                     [(ngModel)]="newEvaluation.startTime"
                      [ngModelOptions]="{standalone: true}" required>
             </div>
             <div class="form-group">
               <label for="evalEndTime">End Time *</label>
-              <input type="time" id="evalEndTime" class="form-control" 
-                     [(ngModel)]="newEvaluation.endTime" 
+              <input type="time" id="evalEndTime" class="form-control"
+                     [(ngModel)]="newEvaluation.endTime"
                      [ngModelOptions]="{standalone: true}" required>
             </div>
           </form>
@@ -104,10 +104,10 @@
           <!-- Question Import Section -->
           <div class="question-import-section" style="margin-bottom: 30px;">
             <h4 style="margin-bottom: 15px; color: #331424;">Import Questions from Excel/CSV File</h4>
-            
+
             <div class="file-upload-container" style="margin-bottom: 20px;">
               <input type="file" id="importExcel" [accept]="ACCEPTED_QUESTION_TYPES"
-                    (change)="onExcelFileSelected($event)" 
+                    (change)="onExcelFileSelected($event)"
                     class="file-input">
               <label for="importExcel" class="file-upload-label">
                 <i class="fas fa-file-excel" style="color: #1D6F42;"></i>
@@ -124,7 +124,7 @@
                 <div class="file-details">
                   <strong style="display: block; margin-bottom: 2px;">{{ excelFileName }}</strong>
                   <small class="text-muted">
-                    {{ questionFileTypeInfo.type === 'csv' ? 'CSV File' : 'Excel File' }} • 
+                    {{ questionFileTypeInfo.type === 'csv' ? 'CSV File' : 'Excel File' }} •
                     {{ (excelFile.size / 1024).toFixed(1) }} KB
                   </small>
                 </div>
@@ -183,8 +183,8 @@
               </button>
             </h4>
             <div class="preview-table" style="max-height: 300px; overflow-y: auto; border: 1px solid #eaeaea; border-radius: 8px; padding: 15px;">
-              <div *ngFor="let question of importPreviewData; let i = index" 
-                  class="question-item" 
+              <div *ngFor="let question of importPreviewData; let i = index"
+                  class="question-item"
                   style="background: #f8f9fa; border-radius: 8px; padding: 15px; margin-bottom: 10px; border-left: 4px solid #FD2A9B;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                   <h5 style="margin: 0; color: #331424;">
@@ -203,7 +203,7 @@
                   </div>
                 </div>
                 <div *ngIf="question.type === 'MCQ' && question.choices" style="margin-left: 20px;">
-                  <div *ngFor="let choice of question.choices" 
+                  <div *ngFor="let choice of question.choices"
                       style="display: flex; align-items: center; margin: 5px 0;">
                     <span style="min-width: 20px;">{{getCharFromNumber(choice.order)}}.</span>
                     <span style="margin-left: 10px;">{{choice.text}}</span>
@@ -216,7 +216,7 @@
                   <span style="color: #666; font-style: italic;">Open-ended question</span>
                 </div>
                 <div *ngIf="question.type === 'TRUE_FALSE' && question.choices" style="margin-left: 20px;">
-                  <div *ngFor="let choice of question.choices" 
+                  <div *ngFor="let choice of question.choices"
                       style="display: flex; align-items: center; margin: 5px 0;">
                     <span style="min-width: 20px;">{{choice.order}}.</span>
                     <span style="margin-left: 10px;">{{choice.text}}</span>
@@ -235,8 +235,8 @@
               Current Questions ({{selectedEvaluation?.questions?.length || 0}})
             </h4>
             <div class="questions-container" style="max-height: 300px; overflow-y: auto; border: 1px solid #eaeaea; border-radius: 8px; padding: 15px;">
-              <div *ngFor="let question of selectedEvaluation?.questions || []; let i = index" 
-                   class="question-item" 
+              <div *ngFor="let question of selectedEvaluation?.questions || []; let i = index"
+                   class="question-item"
                    style="background: #f8f9fa; border-radius: 8px; padding: 15px; margin-bottom: 10px; border-left: 4px solid #331424;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                   <h5 style="margin: 0; color: #331424;">
@@ -255,7 +255,7 @@
                   </div>
                 </div>
                 <div *ngIf="question?.type === 'MCQ' && question?.choices" style="margin-left: 20px;">
-                  <div *ngFor="let choice of question.choices || []" 
+                  <div *ngFor="let choice of question.choices || []"
                        style="display: flex; align-items: center; margin: 5px 0;">
                     <span style="min-width: 20px;">{{getCharFromNumber(choice.order)}}.</span>
                     <span style="margin-left: 10px;">{{choice?.text}}</span>
@@ -265,7 +265,7 @@
                   </div>
                 </div>
                 <div *ngIf="question?.type === 'TRUE_FALSE' && question?.choices" style="margin-left: 20px;">
-                  <div *ngFor="let choice of question.choices || []" 
+                  <div *ngFor="let choice of question.choices || []"
                        style="display: flex; align-items: center; margin: 5px 0;">
                     <span style="min-width: 20px;">{{choice?.order || 1}}.</span>
                     <span style="margin-left: 10px;">{{choice?.text}}</span>
@@ -278,8 +278,8 @@
             </div>
           </div>
 
-         
-          <div *ngIf="(!selectedEvaluation || !selectedEvaluation.questions || selectedEvaluation.questions.length === 0) && importPreviewData.length === 0" 
+
+          <div *ngIf="(!selectedEvaluation || !selectedEvaluation.questions || selectedEvaluation.questions.length === 0) && importPreviewData.length === 0"
                class="no-questions" style="text-align: center; padding: 40px; color: #666;">
             <i class="fas fa-question-circle" style="font-size: 48px; margin-bottom: 15px; color: #ddd;"></i>
             <h4>No questions added yet</h4>
@@ -307,15 +307,15 @@
         <div class="modal-body">
           <div class="form-group">
             <label for="questionText">Question Text *</label>
-            <textarea id="questionText" class="form-control" 
-                     [(ngModel)]="currentQuestion.text" 
+            <textarea id="questionText" class="form-control"
+                     [(ngModel)]="currentQuestion.text"
                      [ngModelOptions]="{standalone: true}"
                      rows="3" placeholder="Enter the question..." required></textarea>
           </div>
           <div class="form-group">
             <label for="questionType">Question Type *</label>
-            <select id="questionType" class="form-control" 
-                    [(ngModel)]="currentQuestion.type" 
+            <select id="questionType" class="form-control"
+                    [(ngModel)]="currentQuestion.type"
                     [ngModelOptions]="{standalone: true}"
                     (change)="onQuestionTypeChange()" required>
               <option value="MCQ">Multiple Choice (MCQ)</option>
@@ -325,35 +325,35 @@
           </div>
           <div class="form-group">
             <label for="questionPoints">Points *</label>
-            <input type="number" id="questionPoints" class="form-control" 
-                   [(ngModel)]="currentQuestion.points" 
+            <input type="number" id="questionPoints" class="form-control"
+                   [(ngModel)]="currentQuestion.points"
                    [ngModelOptions]="{standalone: true}"
                    min="0" max="100" required>
           </div>
           <div class="form-group">
             <label for="questionOrder">Order *</label>
-            <input type="number" id="questionOrder" class="form-control" 
-                   [(ngModel)]="currentQuestion.order" 
+            <input type="number" id="questionOrder" class="form-control"
+                   [(ngModel)]="currentQuestion.order"
                    [ngModelOptions]="{standalone: true}"
                    min="1" required>
           </div>
 
           <!-- Choices for MCQ and True/False -->
-          <div *ngIf="currentQuestion.type === 'MCQ' || currentQuestion.type === 'TRUE_FALSE'" 
+          <div *ngIf="currentQuestion.type === 'MCQ' || currentQuestion.type === 'TRUE_FALSE'"
                class="choices-section" style="margin-top: 20px;">
             <h4 style="margin-bottom: 15px; color: #331424;">Choices</h4>
-            <div *ngFor="let choice of currentQuestion.choices || []; let i = index" 
-                 class="choice-item" 
+            <div *ngFor="let choice of currentQuestion.choices || []; let i = index"
+                 class="choice-item"
                  style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 6px;">
-              <input type="text" [(ngModel)]="choice.text" 
+              <input type="text" [(ngModel)]="choice.text"
                      [ngModelOptions]="{standalone: true}"
-                     placeholder="Choice text" 
+                     placeholder="Choice text"
                      style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-              <input type="number" [(ngModel)]="choice.order" 
+              <input type="number" [(ngModel)]="choice.order"
                      [ngModelOptions]="{standalone: true}"
                      min="1" style="width: 60px; padding: 8px; text-align: center;">
               <label style="display: flex; align-items: center; gap: 5px;">
-                <input type="radio" [name]="'correctChoice'" 
+                <input type="radio" [name]="'correctChoice'"
                        [checked]="choice.isCorrect"
                        (change)="setCorrectChoice(i)">
                 Correct
@@ -430,7 +430,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let student of performanceData?.students || []" 
+                  <tr *ngFor="let student of performanceData?.students || []"
                       style="border-bottom: 1px solid #f0f0f0;">
                     <td style="padding: 10px;">{{student.id}}</td>
                     <td style="padding: 10px;">{{student.name}}</td>
@@ -467,13 +467,13 @@
           </button>
         </div>
         <div class="modal-body">
-         
+
           <div class="form-group">
             <label for="importEvalFile">Select File *</label>
             <div class="file-upload-container">
-              <input type="file" id="importEvalFile" 
+              <input type="file" id="importEvalFile"
                     [accept]="ACCEPTED_EVAL_TYPES"
-                    (change)="onEvalFileSelected($event)" 
+                    (change)="onEvalFileSelected($event)"
                     [disabled]="isEvalImporting"
                     class="file-input">
               <label for="importEvalFile" class="file-upload-label">
@@ -497,7 +497,7 @@
               <div class="file-details">
                 <strong>{{ importEvalFileName }}</strong>
                 <small class="text-muted">
-                  {{ evalFileTypeInfo.type === 'csv' ? 'CSV File' : 'Excel File' }} • 
+                  {{ evalFileTypeInfo.type === 'csv' ? 'CSV File' : 'Excel File' }} •
                   {{ (importEvalFile.size / 1024).toFixed(1) }} KB
                 </small>
               </div>
@@ -524,8 +524,8 @@ publishedDate,type,startTime,endTime,courseCode
               Preview ({{evalImportPreview.length}} evaluations)
             </h4>
             <div class="preview-table" style="max-height: 300px; overflow-y: auto; border: 1px solid #eaeaea; border-radius: 8px; padding: 15px;">
-              <div *ngFor="let evaluation of evalImportPreview; let i = index" 
-                   class="eval-item" 
+              <div *ngFor="let evaluation of evalImportPreview; let i = index"
+                   class="eval-item"
                    style="background: white; border-radius: 8px; padding: 15px; margin-bottom: 10px; border-left: 4px solid #FD2A9B;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                   <h5 style="margin: 0; color: #331424;">
@@ -543,7 +543,7 @@ publishedDate,type,startTime,endTime,courseCode
             </div>
           </div>
 
-          
+
           <div *ngIf="isEvalImporting" class="progress-section">
             <div class="progress-label">
               Importing... {{evalImportProgress}}%
@@ -553,13 +553,13 @@ publishedDate,type,startTime,endTime,courseCode
             </div>
           </div>
 
-          
+
           <div *ngIf="evalImportResult" class="results-section">
             <div [class]="evalImportResult.success ? 'result-success' : 'result-error'">
               <h4>{{evalImportResult.success ? '✅ Import Successful' : '❌ Import Failed'}}</h4>
               <p>{{evalImportResult.message}}</p>
               <p><strong>Imported:</strong> {{evalImportResult.importedCount}} | <strong>Failed:</strong> {{evalImportResult.failedCount}}</p>
-              
+
               <div *ngIf="evalImportResult.errors && evalImportResult.errors.length > 0" class="error-list">
                 <h5>Errors:</h5>
                 <ul>
@@ -573,7 +573,7 @@ publishedDate,type,startTime,endTime,courseCode
           <button class="btn btn-secondary" (click)="closeImportModal()" [disabled]="isEvalImporting">
             Cancel
           </button>
-          <button class="btn btn-primary" (click)="executeEvalImport()" 
+          <button class="btn btn-primary" (click)="executeEvalImport()"
                   [disabled]="!importEvalFile || isEvalImporting">
             <i class="fas fa-file-import"></i> {{isEvalImporting ? 'Importing...' : 'Import'}}
           </button>
@@ -608,19 +608,19 @@ publishedDate,type,startTime,endTime,courseCode
           <button class="btn btn-secondary confirm-cancel" (click)="cancelAction()">
             {{confirmModalData.cancelText}}
           </button>
-          <button class="btn confirm-action" 
-                  [class]="'confirm-' + confirmModalData.type" 
+          <button class="btn confirm-action"
+                  [class]="'confirm-' + confirmModalData.type"
                   (click)="confirmAction()">
             {{confirmModalData.confirmText}}
           </button>
         </div>
       </div>
     </div>
-    
+
     <!--  Content Section -->
     <main class="main-content">
       <div class="content-container">
-        
+
         <div class="table-actions-header">
           <div class="actions-right">
             <button class="action-btn import-btn" (click)="openImportModal()">
@@ -637,12 +637,12 @@ publishedDate,type,startTime,endTime,courseCode
 
         <!-- Table Container -->
         <div class="table-container">
-          
+
           <div class="table-header">
             <div class="table-filters">
              <div class="filter-group">
             <label for="filterType">Filter by Type:</label>
-            <select id="filterType" class="filter-select" 
+            <select id="filterType" class="filter-select"
                     [(ngModel)]="selectedType" (change)="onFilterChange()">
               <option value="All">All Types</option>
               <option *ngFor="let type of evalTypes" [value]="type">
@@ -650,10 +650,10 @@ publishedDate,type,startTime,endTime,courseCode
               </option>
             </select>
           </div>
-              
+
               <div class="filter-group">
                 <label for="filterCourse">Filter by Course:</label>
-                <select id="filterCourse" class="filter-select" 
+                <select id="filterCourse" class="filter-select"
                         [(ngModel)]="selectedCourse" (change)="onFilterChange()">
                   <option value="All">All Courses</option>
                   <option *ngFor="let course of availableCourses" [value]="course.code">
@@ -661,21 +661,21 @@ publishedDate,type,startTime,endTime,courseCode
                   </option>
                 </select>
               </div>
-              
+
                       <div class="filter-group">
           <label for="filterStatus">Filter by Status:</label>
-          <select id="filterStatus" class="filter-select" 
+          <select id="filterStatus" class="filter-select"
                   [(ngModel)]="selectedStatus" (change)="onFilterChange()">
             <option *ngFor="let status of evalStatuses" [value]="status">
               {{ getStatusDisplayText(status) }}
             </option>
           </select>
         </div>
-                      
+
               <div class="search-box">
                 <i class="fas fa-search"></i>
-                <input type="text" 
-                       placeholder="Search by course code..." 
+                <input type="text"
+                       placeholder="Search by course code..."
                        class="search-input"
                        [(ngModel)]="searchTerm"
                        (keyup.enter)="onSearch()"
@@ -722,25 +722,25 @@ publishedDate,type,startTime,endTime,courseCode
                   <td>{{evalItem.questions?.length || 0}}</td>
                   <td>
                     <div class="action-buttons">
-                      <button class="action-btn-text manage-btn" 
-                              [title]="'Manage questions for ' + evalItem.courseCode" 
+                      <button class="action-btn-text manage-btn"
+                              [title]="'Manage questions for ' + evalItem.courseCode"
                               (click)="manageQuestions(evalItem)"
                               [disabled]="!canManageQuestions(evalItem)">
                         <i class="fas fa-question-circle"></i> Questions
                       </button>
-                      <button class="action-btn-text performance-btn" 
-                              [title]="'View performance for ' + evalItem.courseCode" 
+                      <button class="action-btn-text performance-btn"
+                              [title]="'View performance for ' + evalItem.courseCode"
                               (click)="viewPerformance(evalItem)">
                         <i class="fas fa-chart-line"></i> Performance
                       </button>
-                      <button class="action-btn-text edit-btn" 
-                              [title]="'Edit evaluation for ' + evalItem.courseCode" 
+                      <button class="action-btn-text edit-btn"
+                              [title]="'Edit evaluation for ' + evalItem.courseCode"
                               (click)="editEvaluation(evalItem)"
                               [disabled]="!canEditEvaluation(evalItem)">
                         <i class="fas fa-edit"></i> Edit
                       </button>
-                      <button class="action-btn-text delete-btn" 
-                              [title]="'Delete evaluation for ' + evalItem.courseCode" 
+                      <button class="action-btn-text delete-btn"
+                              [title]="'Delete evaluation for ' + evalItem.courseCode"
                               (click)="deleteEvaluation(evalItem)"
                               [disabled]="!canEditEvaluation(evalItem)">
                         <i class="fas fa-trash"></i> Delete
@@ -750,8 +750,8 @@ publishedDate,type,startTime,endTime,courseCode
                 </tr>
               </tbody>
             </table>
-            
-            
+
+
             <div *ngIf="filteredEvaluations.length === 0" class="no-results">
               <i class="fas fa-search no-results-icon"></i>
               <h3>No evaluations found</h3>
@@ -765,29 +765,29 @@ publishedDate,type,startTime,endTime,courseCode
               Showing {{pagination.startIndex}} to {{pagination.endIndex}} of {{pagination.totalItems}} entries
             </div>
             <div class="pagination-controls">
-              <button class="pagination-btn" [disabled]="pagination.currentPage === 1" 
+              <button class="pagination-btn" [disabled]="pagination.currentPage === 1"
                       (click)="goToPage(1)">
                 <i class="fas fa-angle-double-left"></i>
               </button>
-              <button class="pagination-btn" [disabled]="pagination.currentPage === 1" 
+              <button class="pagination-btn" [disabled]="pagination.currentPage === 1"
                       (click)="goToPage(pagination.currentPage - 1)">
                 <i class="fas fa-chevron-left"></i>
               </button>
-              
+
               <div class="page-numbers">
-                <button *ngFor="let page of pagination.pages" 
-                        class="page-number" 
+                <button *ngFor="let page of pagination.pages"
+                        class="page-number"
                         [class.active]="page === pagination.currentPage"
                         (click)="goToPage(page)">
                   {{page}}
                 </button>
               </div>
-              
-              <button class="pagination-btn" [disabled]="pagination.currentPage === pagination.totalPages" 
+
+              <button class="pagination-btn" [disabled]="pagination.currentPage === pagination.totalPages"
                       (click)="goToPage(pagination.currentPage + 1)">
                 <i class="fas fa-chevron-right"></i>
               </button>
-              <button class="pagination-btn" [disabled]="pagination.currentPage === pagination.totalPages" 
+              <button class="pagination-btn" [disabled]="pagination.currentPage === pagination.totalPages"
                       (click)="goToPage(pagination.totalPages)">
                 <i class="fas fa-angle-double-right"></i>
               </button>
