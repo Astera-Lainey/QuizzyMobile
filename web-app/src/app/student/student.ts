@@ -17,9 +17,9 @@ interface Year {
 
 interface Class {
   classid: number;
-  name: string;
+  level: string;
   department: string;
-  totalstudents: number;
+  totalStudents: number;
 }
 
 interface Student {
@@ -105,26 +105,16 @@ export class Students implements OnInit {
   ];
 
   mockClasses: Class[] = [
-    { classid: 1, name: 'Mathematics 101', department: 'Science & Technology', totalstudents: 45 },
-    { classid: 2, name: 'Physics 201', department: 'Science & Technology', totalstudents: 32 },
-    { classid: 3, name: 'Biology 101', department: 'Life Sciences', totalstudents: 28 },
-    { classid: 4, name: 'Computer Science 301', department: 'Computer Science', totalstudents: 40 },
-    { classid: 5, name: 'English Literature', department: 'Humanities', totalstudents: 35 },
-    { classid: 6, name: 'Art 101', department: 'Arts', totalstudents: 25 }
+    { classid: 1, level: 'Mathematics 101', department: 'Science & Technology', totalStudents: 45 },
+    { classid: 2, level: 'Physics 201', department: 'Science & Technology', totalStudents: 32 },
+    { classid: 3, level: 'Biology 101', department: 'Life Sciences', totalStudents: 28 },
+    { classid: 4, level: 'Computer Science 301', department: 'Computer Science', totalStudents: 40 },
+    { classid: 5, level: 'English Literature', department: 'Humanities', totalStudents: 35 },
+    { classid: 6, level: 'Art 101', department: 'Arts', totalStudents: 25 }
   ];
 
   mockStudents: Student[] = [
-    { matricule: 'STU001', email: 'john.doe@edu.com', firstName: 'John', lastName: 'Doe', phoneNumber: '1234567890', emailVerified: true, password: 'hashed123' },
-    { matricule: 'STU002', email: 'jane.smith@edu.com', firstName: 'Jane', lastName: 'Smith', phoneNumber: '1234567891', emailVerified: true, password: 'hashed123' },
-    { matricule: 'STU003', email: 'robert.j@edu.com', firstName: 'Robert', lastName: 'Johnson', phoneNumber: '1234567892', emailVerified: false, password: 'hashed123' },
-    { matricule: 'STU004', email: 'alice.w@edu.com', firstName: 'Alice', lastName: 'Williams', phoneNumber: '1234567893', emailVerified: true, password: 'hashed123' },
-    { matricule: 'STU005', email: 'michael.b@edu.com', firstName: 'Michael', lastName: 'Brown', phoneNumber: '1234567894', emailVerified: true, password: 'hashed123' },
-    { matricule: 'STU006', email: 'sarah.c@edu.com', firstName: 'Sarah', lastName: 'Clark', phoneNumber: '1234567895', emailVerified: false, password: 'hashed123' },
-    { matricule: 'STU007', email: 'david.w@edu.com', firstName: 'David', lastName: 'Wilson', phoneNumber: '1234567896', emailVerified: true, password: 'hashed123' },
-    { matricule: 'STU008', email: 'emily.m@edu.com', firstName: 'Emily', lastName: 'Miller', phoneNumber: '1234567897', emailVerified: true, password: 'hashed123' },
-    { matricule: 'STU009', email: 'james.t@edu.com', firstName: 'James', lastName: 'Taylor', phoneNumber: '1234567898', emailVerified: false, password: 'hashed123' },
-    { matricule: 'STU010', email: 'olivia.a@edu.com', firstName: 'Olivia', lastName: 'Anderson', phoneNumber: '1234567899', emailVerified: true, password: 'hashed123' }
-  ];
+     ];
 
   mockStudentClassYear: StudentClassYear[] = [
     { matricule: 'STU001', classid: 1, yearid: 2 },
@@ -183,7 +173,7 @@ export class Students implements OnInit {
       return {
         ...student,
         fullName: `${student.firstName} ${student.lastName}`,
-        level: classObj ? classObj.name : 'Unknown',
+        level: classObj ? classObj.level : 'Unknown',
         department: classObj ? classObj.department : 'Unknown',
         yearName: year ? `${year.startDate.split('-')[0]}-${year.endDate.split('-')[0]}` : 'Unknown'
       };
@@ -212,7 +202,7 @@ export class Students implements OnInit {
       }
     }
 
-    const classNames = filteredClasses.map(c => c.name);
+    const classNames = filteredClasses.map(c => c.level);
     return ['All', ...Array.from(new Set(classNames))];
   }
 
