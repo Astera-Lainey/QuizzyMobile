@@ -550,9 +550,9 @@ export class Navbar implements OnInit, OnDestroy {
           const index = this.semesters.findIndex(s => s.semesterId === semesterData.semesterId);
           if (index !== -1) {
             
-            if (semesterData.isActive) {
-              this.semesters.forEach(s => s.isActive = false);
-            }
+            // if (semesterData.isActive) {
+            //   this.semesters.forEach(s => s.isActive = false);
+            // }
             this.semesters[index] = semesterData;
             this.semesterUpdate.emit(semesterData);
             this.showToast('success', 'Semester Updated', 'Semester has been successfully updated.');
@@ -632,9 +632,9 @@ export class Navbar implements OnInit, OnDestroy {
           const index = this.academicYears.findIndex(y => y.yearId === yearData.yearId);
           if (index !== -1) {
             
-            if (yearData.isPresent) {
-              this.academicYears.forEach(y => y.isPresent = false);
-            }
+            // if (yearData.isPresent) {
+            //   this.academicYears.forEach(y => y.isPresent = false);
+            // }
             this.academicYears[index] = yearData;
             this.yearUpdate.emit(yearData);
             this.showToast('success', 'Academic Year Updated', 'Academic year has been successfully updated.');

@@ -949,3 +949,22 @@ body {
     margin: 0 8px;
   }
 }
+.readonly-info {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 8px 12px;
+  color: #6c757d;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.readonly-info i {
+  color: #6c757d;
+}
+
+.form-group label + .readonly-info {
+  margin-top: 4px;
+}

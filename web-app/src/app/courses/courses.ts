@@ -75,7 +75,7 @@ interface ConfirmModalData {
   providers: [CoursesService],
 })
 export class Courses implements OnInit {
-  useMockData = false;
+  useMockData = true;
 
   showToast = false;
   toastMessage = '';
@@ -245,18 +245,18 @@ export class Courses implements OnInit {
 
   loadMockData() {
     setTimeout(() => {
-      // this.classes = this.mockClasses;
+       this.classes = this.mockClasses;
       this.classesService.getAllClasses().subscribe({
         next: (data) => {
           this.classes = data;
-          // this.classes = data.map((cls) => ({
-          //   classId: cls.classId, // or cls.classId
-          //   // label: `${cls.level} - ${cls.department}`,
-          //   level: cls.level,
-          //   department: cls.department,
-          //   totalStudents: cls.totalStudents,
-          //   isActive: cls.isActive,
-          // }));
+           this.classes = data.map((cls) => ({
+            classId: cls.classId, // or cls.classId
+              label: `${cls.level} - ${cls.department}`,
+            level: cls.level,
+            department: cls.department,
+             totalStudents: cls.totalStudents,
+            isActive: cls.isActive,
+          }));
 
           this.cdr.detectChanges();
         },
@@ -372,10 +372,11 @@ export class Courses implements OnInit {
     );
   }
 
-  get classNames(): string[] {
-    const nameList = this.classes.map((c) => c.level);
-    return ['All Classes', ...Array.from(new Set(nameList)).sort()];
-  }
+ get classNames(): string[] {
+  const nameList = this.classes.map((c) => `${c.level} - ${c.department}`);
+  return ['All Classes', ...Array.from(new Set(nameList)).sort()];
+}
+
 
   getSemesterNumbers(): number[] {
     const semesterNumbers = this.semesters.map((s) => s.number);
@@ -437,6 +438,7 @@ export class Courses implements OnInit {
       const term = this.searchTerm.toLowerCase();
       filtered = filtered.filter(
         (course) =>
+          course.courseName.toLowerCase().includes(term)||
           course.courseCode.toLowerCase().includes(term) ||
           course.className.toLowerCase().includes(term) ||
           course.teacher.toLowerCase().includes(term) ||
@@ -468,97 +470,113 @@ export class Courses implements OnInit {
     setTimeout(() => this.cdr.detectChanges(), 0);
   }
 
-  updateCourse() {
-    if (!this.editingCourse) return;
+ updateCourse() {
+  if (!this.editingCourse) return;
 
-    if (
-      !this.editingCourse.courseCode ||
-      !this.editingCourse.className ||
-      !this.editingCourse.teacher ||
-      this.editingCourse.credit <= 0 ||
-      !this.editingCourse.className ||
-      !this.editingCourse.semesterId ||
-      this.editingCourse.semesterId <= 0
-    ) {
-      this.showToastMessage('Please fill all fields correctly!', 'error');
-      return;
-    }
-
-    if (this.useMockData) {
-      setTimeout(() => {
-        const index = this.courses.findIndex(
-          (c) => c.courseCode === this.editingCourse!.courseCode
-        );
-        if (index !== -1) {
-          const updatedCourse: Course = {
-            courseCode: this.editingCourse!.courseCode,
-            courseName: this.editingCourse!.className,
-            credit: this.editingCourse!.credit,
-            teacher: this.editingCourse!.teacher,
-            className: this.editingCourse!.className,
-            semesterId: this.editingCourse!.semesterId || 1,
-          };
-          this.courses[index] = updatedCourse;
-          this.showToastMessage(
-            `${this.editingCourse!.courseCode} updated successfully!`,
-            'success'
-          );
-          this.closeEditModal();
-          this.applyFilters();
-          setTimeout(() => this.cdr.detectChanges(), 0);
-        }
-      }, 200);
-    } else {
-      const selectedClass = this.classes.find((c) => c.level === this.editingCourse!.className);
-      if (!selectedClass) {
-        this.showToastMessage('Selected class not found!', 'error');
-        return;
-      }
-
-      const courseData = {
-        courseName: this.editingCourse!.courseName,
-        credit: this.editingCourse!.credit,
-        teacherId: this.editingCourse!.teacher,
-        className: this.editingCourse!.className,
-        semesterId: this.editingCourse!.semesterId,
-      };
-
-      console.log('Updating course with data:', courseData);
-      console.log('Editing course code:', this.editingCourse!.courseCode);
-
-      this.coursesService.updateCourse(this.editingCourse!.courseCode, selectedClass.classId, courseData).subscribe({
-        next: (response) => {
-          const index = this.courses.findIndex(
-            (c) => c.courseCode === this.editingCourse!.courseCode
-          );
-          if (index !== -1) {
-            const updatedCourse: Course = {
-              courseCode: this.editingCourse!.courseCode,
-              courseName: response.name || this.editingCourse!.className,
-              credit: response.credit || this.editingCourse!.credit,
-              teacher: response.teacher || this.editingCourse!.teacher,
-              className: response.className || this.editingCourse!.className,
-              semesterId: response.semesterNumber || this.editingCourse!.semesterId || 1,
-            };
-            this.courses[index] = updatedCourse;
-          }
-          this.showToastMessage(
-            `${this.editingCourse!.courseCode} updated successfully!`,
-            'success'
-          );
-          this.closeEditModal();
-          this.applyFilters();
-          setTimeout(() => this.cdr.detectChanges(), 0);
-        },
-        error: (error) => {
-          console.error('Error updating course:', error);
-          this.showToastMessage('Failed to update course', 'error');
-          setTimeout(() => this.cdr.detectChanges(), 0);
-        },
-      });
-    }
+  if (
+    !this.editingCourse.courseCode ||
+    !this.editingCourse.courseName ||
+    this.editingCourse.credit <= 0 ||
+    !this.editingCourse.semesterId ||
+    this.editingCourse.semesterId <= 0
+  ) {
+    this.showToastMessage('Please fill all fields correctly!', 'error');
+    return;
   }
 
+  const selectedClass = this.classes.find((c) => c.level === this.editingCourse!.className);
+  if (!selectedClass) {
+    this.showToastMessage('Class not found for this course!', 'error');
+    return;
+  }
+
+  const teacherExists = this.teachers.some(
+    (t) => `${t.firstName} ${t.lastName}` === this.editingCourse!.teacher
+  );
+  if (!teacherExists) {
+    this.showToastMessage('Teacher not found for this course!', 'error');
+    return;
+  }
+
+  if (this.useMockData) {
+    setTimeout(() => {
+      const index = this.courses.findIndex(
+        (c) => c.courseCode === this.editingCourse!.courseCode && 
+               c.className === this.editingCourse!.className 
+      );
+      if (index !== -1) {
+        const updatedCourse: Course = {
+          courseCode: this.editingCourse!.courseCode,
+          courseName: this.editingCourse!.courseName,
+          credit: this.editingCourse!.credit,
+          teacher: this.editingCourse!.teacher, 
+          className: this.editingCourse!.className, 
+          semesterId: this.editingCourse!.semesterId,
+          number: this.editingCourse!.semesterId,
+        };
+        this.courses[index] = updatedCourse;
+        this.showToastMessage(
+          `${this.editingCourse!.courseCode} updated successfully!`,
+          'success'
+        );
+        this.closeEditModal();
+        this.applyFilters();
+        setTimeout(() => this.cdr.detectChanges(), 0);
+      }
+    }, 200);
+  } else {
+    
+    const courseData = {
+      courseName: this.editingCourse!.courseName,
+      credit: this.editingCourse!.credit,
+      semesterId: this.editingCourse!.semesterId,
+    
+    };
+
+    console.log('Updating course with data:', courseData);
+    console.log('Course Code:', this.editingCourse!.courseCode);
+    console.log('Class ID:', selectedClass.classId);
+    console.log('NOTE: Teacher and Class are NOT being sent for update');
+
+    this.coursesService.updateCourse(
+      this.editingCourse!.courseCode, 
+      selectedClass.classId, 
+      courseData
+    ).subscribe({
+      next: (response) => {
+        const index = this.courses.findIndex(
+          (c) => c.courseCode === this.editingCourse!.courseCode && 
+                 c.className === this.editingCourse!.className
+        );
+        if (index !== -1) {
+        
+          const updatedCourse: Course = {
+            courseCode: this.editingCourse!.courseCode,
+            courseName: response.name || this.editingCourse!.courseName,
+            credit: response.credit || this.editingCourse!.credit,
+            teacher: this.editingCourse!.teacher, 
+            className: this.editingCourse!.className, 
+            semesterId: response.semesterId || this.editingCourse!.semesterId,
+            number: response.semesterNumber || this.editingCourse!.semesterId,
+          };
+          this.courses[index] = updatedCourse;
+        }
+        this.showToastMessage(
+          `${this.editingCourse!.courseCode} updated successfully!`,
+          'success'
+        );
+        this.closeEditModal();
+        this.applyFilters();
+        setTimeout(() => this.cdr.detectChanges(), 0);
+      },
+      error: (error) => {
+        console.error('Error updating course:', error);
+        this.showToastMessage('Failed to update course', 'error');
+        setTimeout(() => this.cdr.detectChanges(), 0);
+      },
+    });
+  }
+}
   deleteCourse(course: Course) {
     this.showConfirmModal = true;
     this.confirmModalData = {

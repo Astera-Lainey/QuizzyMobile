@@ -312,7 +312,7 @@
           </div>
         </div>
         
-        <div class="form-group">
+        <!-- <div class="form-group">
           <div class="checkbox-container">
             <input type="checkbox" id="isActive" 
                    [(ngModel)]="currentSemester.isActive" 
@@ -322,7 +322,7 @@
               <small class="form-text">Only one semester can be active at a time</small>
             </label>
           </div>
-        </div>
+        </div> -->
         
         <div *ngIf="dateError" class="alert alert-danger">
           <i class="fas fa-exclamation-circle"></i> {{ dateError }}
@@ -371,7 +371,7 @@
           </div>
         </div>
         
-        <div class="form-group">
+        <!-- <div class="form-group">
           <div class="checkbox-container">
             <input type="checkbox" id="isPresent" 
                    [(ngModel)]="currentYear.isPresent" 
@@ -381,7 +381,7 @@
               <small class="form-text">Only one academic year can be marked as present</small>
             </label>
           </div>
-        </div>
+        </div> -->
         
         <div *ngIf="yearDateError" class="alert alert-danger">
           <i class="fas fa-exclamation-circle"></i> {{ yearDateError }}

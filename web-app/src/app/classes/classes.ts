@@ -70,11 +70,17 @@ export class Classes implements OnInit {
     onCancel: () => {},
   };
 
+  
   newClass = {
     name: '',
-    Department: '',
+    department: '', 
+    otherDepartment: '', 
     students: 0,
   };
+
+ 
+  otherDepartmentError = false;
+  isSaving = false;
 
   editingClass: Class = {
     classId: 0,
@@ -194,6 +200,7 @@ export class Classes implements OnInit {
   filteredClasses: Class[] = [];
 
   departments: string[] = ['All'];
+  departmentsForAddModal: string[] = []; 
   classNames: string[] = ['All'];
 
   pagination = {
@@ -234,7 +241,10 @@ export class Classes implements OnInit {
     this.hasApiError = false;
 
     setTimeout(() => {
+      
       this.departments = ['All', ...this.mockDepartments];
+      
+      this.departmentsForAddModal = [...this.mockDepartments];
 
       const uniqueClassNames = [...new Set(this.mockClasses.map((cls) => cls.level))].sort();
       this.classNames = ['All', ...uniqueClassNames];
@@ -258,7 +268,10 @@ export class Classes implements OnInit {
         this.applyFilters();
 
         const uniqueDepartments = [...new Set(data.map((cls) => cls.department))].sort();
+        
         this.departments = ['All', ...uniqueDepartments];
+        
+        this.departmentsForAddModal = [...uniqueDepartments];
 
         const uniqueClassNames = [...new Set(data.map((cls) => cls.level))].sort();
         this.classNames = ['All', ...uniqueClassNames];
@@ -275,6 +288,7 @@ export class Classes implements OnInit {
         this.classes = [];
         this.filteredClasses = [];
         this.departments = ['All'];
+        this.departmentsForAddModal = [];
         this.classNames = ['All'];
         this.updatePagination();
 
@@ -295,6 +309,18 @@ export class Classes implements OnInit {
 
   onSidebarStateChange(isCollapsed: boolean) {
     this.isSidebarCollapsed = isCollapsed;
+  }
+
+  
+  onDepartmentChange() {
+    
+    this.otherDepartmentError = false;
+    
+   
+    if (this.newClass.department !== 'other') {
+      this.newClass.otherDepartment = '';
+    }
+    this.cdr.detectChanges();
   }
 
   applyFilters() {
@@ -570,57 +596,119 @@ export class Classes implements OnInit {
   }
 
   openAddModal() {
-    this.newClass = { name: '', Department: '', students: 0 };
+    this.newClass = { 
+      name: '', 
+      department: '', 
+      otherDepartment: '', 
+      students: 0 
+    };
+    this.otherDepartmentError = false;
+    this.isSaving = false;
+    
+    
+    if (this.departmentsForAddModal.length === 0) {
+     
+      this.departmentsForAddModal = this.departments.filter(dept => dept !== 'All');
+    }
+    
     this.showAddModal = true;
     this.cdr.detectChanges();
   }
 
   closeAddModal() {
     this.showAddModal = false;
+    this.isSaving = false;
+    this.otherDepartmentError = false;
+    this.newClass = { 
+      name: '', 
+      department: '', 
+      otherDepartment: '', 
+      students: 0 
+    };
     this.cdr.detectChanges();
   }
 
   saveClass() {
-    if (!this.newClass.name || !this.newClass.Department || this.newClass.students <= 0) {
+    
+    this.otherDepartmentError = false;
+    
+    let actualDepartment = this.newClass.department;
+    
+    if (this.newClass.department === 'other') {
+      
+      if (!this.newClass.otherDepartment || this.newClass.otherDepartment.trim() === '') {
+        this.otherDepartmentError = true;
+        this.showToastMessage('Please enter a department name!', 'error');
+        return;
+      }
+      actualDepartment = this.newClass.otherDepartment.trim();
+      
+    
+      if (this.departmentsForAddModal.includes(actualDepartment)) {
+        this.showToastMessage(`Department "${actualDepartment}" already exists. Please select it from the dropdown.`, 'info');
+        return;
+      }
+    }
+    
+    if (!this.newClass.name || !actualDepartment || this.newClass.students <= 0) {
       this.showToastMessage('Please fill all fields correctly!', 'error');
       return;
     }
 
+    this.isSaving = true;
+
     const classData: ClassCreateDto = {
       level: this.newClass.name,
-      department: this.newClass.Department,
+      department: actualDepartment,
       totalStudents: this.newClass.students,
     };
 
     if (this.useMockData) {
-      const newId = Math.max(...this.classes.map((c) => c.classId)) + 1;
-      const newClassItem: Class = {
-        classId: newId,
-        level: this.newClass.name,
-        department: this.newClass.Department,
-        totalStudents: this.newClass.students,
-        isActive: true,
-      };
+      setTimeout(() => {
+        const newId = Math.max(...this.classes.map((c) => c.classId), 0) + 1;
+        const newClassItem: Class = {
+          classId: newId,
+          level: this.newClass.name,
+          department: actualDepartment,
+          totalStudents: this.newClass.students,
+          isActive: true,
+        };
 
-      this.classes.unshift(newClassItem);
+        this.classes.unshift(newClassItem);
 
-      if (!this.classNames.includes(newClassItem.level)) {
-        this.classNames = ['All', newClassItem.level, ...this.classNames.slice(1)].sort();
-      }
+        if (this.newClass.department === 'other' && 
+            !this.departmentsForAddModal.includes(actualDepartment)) {
+          this.departmentsForAddModal.push(actualDepartment);
+          this.departmentsForAddModal.sort();
+          
+          if (!this.departments.includes(actualDepartment)) {
+            this.departments = ['All', ...this.departmentsForAddModal];
+          }
+        }
 
-      this.showToastMessage(`${this.newClass.name} has been added successfully!`, 'success');
-      this.closeAddModal();
-      this.applyFilters();
-      this.cdr.detectChanges();
+        this.isSaving = false;
+        this.showToastMessage(`${this.newClass.name} has been added successfully!`, 'success');
+        this.closeAddModal();
+        this.applyFilters();
+        this.cdr.detectChanges();
+      }, 1000);
     } else {
+    
       this.classService.createClass(classData).subscribe({
         next: (response) => {
           this.classes.unshift(response);
 
-          if (!this.classNames.includes(response.level)) {
-            this.classNames = ['All', response.level, ...this.classNames.slice(1)].sort();
+          if (this.newClass.department === 'other' && 
+              !this.departmentsForAddModal.includes(response.department)) {
+            this.departmentsForAddModal.push(response.department);
+            this.departmentsForAddModal.sort();
+            
+            if (!this.departments.includes(response.department)) {
+              this.departments = ['All', ...this.departmentsForAddModal];
+            }
           }
 
+          this.isSaving = false;
           this.showToastMessage(`${response.level} has been added successfully!`, 'success');
           this.closeAddModal();
           this.applyFilters();
@@ -628,7 +716,9 @@ export class Classes implements OnInit {
         },
         error: (error) => {
           console.error('Error adding class:', error);
+          this.isSaving = false;
           this.showToastMessage('Failed to add class. Please try again.', 'error');
+          this.cdr.detectChanges();
         },
       });
     }
@@ -907,6 +997,10 @@ export class Classes implements OnInit {
               });
 
               importedClassNames.push(name);
+
+              if (!this.departmentsForAddModal.includes(department)) {
+                this.departmentsForAddModal.push(department);
+              }
             } else {
               errors.push(`Line ${i + 1}: Invalid data - ${lines[i]}`);
             }
@@ -957,6 +1051,10 @@ export class Classes implements OnInit {
               });
 
               importedClassNames.push(name);
+
+              if (!this.departmentsForAddModal.includes(department)) {
+                this.departmentsForAddModal.push(department);
+              }
             } else {
               errors.push(`Row ${i + 1}: Invalid data`);
             }
@@ -979,6 +1077,11 @@ export class Classes implements OnInit {
       this.cdr.detectChanges();
 
       this.classes = [...importedClasses, ...this.classes];
+
+      if (this.departmentsForAddModal.length > 0) {
+        this.departmentsForAddModal.sort();
+        this.departments = ['All', ...this.departmentsForAddModal];
+      }
 
       const newUniqueClassNames = [...new Set(importedClassNames)].filter(
         (name) => !this.classNames.includes(name)

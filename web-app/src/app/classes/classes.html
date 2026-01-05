@@ -28,47 +28,64 @@
       </button>
     </div>
 
-    <!-- Add Class Modal -->
-    <div class="modal-overlay" *ngIf="showAddModal">
-      <div class="modal-container">
-        <div class="modal-header">
-          <h2 class="modal-title">Add New Class</h2>
-          <button class="modal-close" (click)="closeAddModal()">
-            <i class="fas fa-times"></i>
-          </button>
+   <!-- Add Class Modal -->
+<div class="modal-overlay" *ngIf="showAddModal">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h2 class="modal-title">Add New Class</h2>
+      <button class="modal-close" (click)="closeAddModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="className">Class Name *</label>
+        <input type="text" id="className" class="form-control"
+               [(ngModel)]="newClass.name"
+               placeholder="e.g., Mathematics 101">
+      </div>
+      <div class="form-group">
+        <label for="classDepartment">Department *</label>
+        <div class="department-select-container">
+          <select id="classDepartment" class="form-control" 
+                  [(ngModel)]="newClass.department"
+                  (change)="onDepartmentChange()">
+            <option value="">Select Department</option>
+            <option *ngFor="let dept of departmentsForAddModal" [value]="dept">
+              {{dept}}
+            </option>
+            <option value="other">Other </option>
+          </select>
         </div>
-        <div class="modal-body">
-          <div class="form-group">
-            <label for="className">Class Name *</label>
-            <input type="text" id="className" class="form-control"
-                   [(ngModel)]="newClass.name"
-                   placeholder="e.g., Mathematics 101">
+        
+        <div *ngIf="newClass.department === 'other'" class="form-group other-department-input">
+          <label for="otherDepartment">Enter New Department Name *</label>
+          <input type="text" id="otherDepartment" class="form-control"
+                 [(ngModel)]="newClass.otherDepartment"
+                 placeholder="e.g.GE"
+                 [class.is-invalid]="otherDepartmentError">
+          <div *ngIf="otherDepartmentError" class="invalid-feedback">
+            Please enter a department name
           </div>
-          <div class="form-group">
-            <label for="classDepartment">Department *</label>
-            <select id="classDepartment" class="form-control" [(ngModel)]="newClass.Department">
-              <option value="">Select Department</option>
-              <option *ngFor="let dept of departments" [value]="dept">
-                {{dept}}
-              </option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="classStudents">Number of Students *</label>
-            <input type="number" id="classStudents" class="form-control"
-                   [(ngModel)]="newClass.students"
-                   min="1" max="1000" placeholder="e.g., 45">
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeAddModal()">Cancel</button>
-          <button class="btn btn-primary" (click)="saveClass()">
-            <i class="fas fa-save"></i> Save Class
-          </button>
         </div>
       </div>
+      <div class="form-group">
+        <label for="classStudents">Number of Students *</label>
+        <input type="number" id="classStudents" class="form-control"
+               [(ngModel)]="newClass.students"
+               min="1" max="1000" placeholder="e.g., 45">
+      </div>
     </div>
-
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeAddModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveClass()" [disabled]="isSaving">
+        <i class="fas fa-save"></i> 
+        <span *ngIf="isSaving">Saving...</span>
+        <span *ngIf="!isSaving">Save Class</span>
+      </button>
+    </div>
+  </div>
+</div>
     <!-- Edit Class Modal -->
     <div class="modal-overlay" *ngIf="showEditModal">
       <div class="modal-container">
