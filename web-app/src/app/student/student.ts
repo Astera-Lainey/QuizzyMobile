@@ -7,6 +7,8 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import * as XLSX from 'xlsx';
+import { AcademicYear, NavbarService } from '../../services/navbar';
+import { catchError, pipe } from 'rxjs';
 
 interface Year {
   yearid: number;
@@ -16,7 +18,7 @@ interface Year {
 }
 
 interface Class {
-  classid: number;
+  classId: number;
   level: string;
   department: string;
   totalStudents: number;
@@ -30,6 +32,7 @@ interface Student {
   phoneNumber: string;
   emailVerified: boolean;
   password: string;
+  classId: number;
 }
 
 interface StudentTableItem extends Student {
@@ -83,7 +86,7 @@ export class Students implements OnInit {
     cancelText: 'Cancel',
     type: 'info',
     onConfirm: () => {},
-    onCancel: () => {}
+    onCancel: () => {},
   };
 
   isSidebarCollapsed = false;
@@ -101,20 +104,24 @@ export class Students implements OnInit {
   mockYears: Year[] = [
     { yearid: 1, startDate: '2023-09-01', endDate: '2024-06-30', isPresent: false },
     { yearid: 2, startDate: '2024-09-01', endDate: '2025-06-30', isPresent: true },
-    { yearid: 3, startDate: '2022-09-01', endDate: '2023-06-30', isPresent: false }
+    { yearid: 3, startDate: '2022-09-01', endDate: '2023-06-30', isPresent: false },
   ];
 
   mockClasses: Class[] = [
-    { classid: 1, level: 'Mathematics 101', department: 'Science & Technology', totalStudents: 45 },
-    { classid: 2, level: 'Physics 201', department: 'Science & Technology', totalStudents: 32 },
-    { classid: 3, level: 'Biology 101', department: 'Life Sciences', totalStudents: 28 },
-    { classid: 4, level: 'Computer Science 301', department: 'Computer Science', totalStudents: 40 },
-    { classid: 5, level: 'English Literature', department: 'Humanities', totalStudents: 35 },
-    { classid: 6, level: 'Art 101', department: 'Arts', totalStudents: 25 }
+    { classId: 1, level: 'Mathematics 101', department: 'Science & Technology', totalStudents: 45 },
+    { classId: 2, level: 'Physics 201', department: 'Science & Technology', totalStudents: 32 },
+    { classId: 3, level: 'Biology 101', department: 'Life Sciences', totalStudents: 28 },
+    {
+      classId: 4,
+      level: 'Computer Science 301',
+      department: 'Computer Science',
+      totalStudents: 40,
+    },
+    { classId: 5, level: 'English Literature', department: 'Humanities', totalStudents: 35 },
+    { classId: 6, level: 'Art 101', department: 'Arts', totalStudents: 25 },
   ];
 
-  mockStudents: Student[] = [
-     ];
+  mockStudents: Student[] = [];
 
   mockStudentClassYear: StudentClassYear[] = [
     { matricule: 'STU001', classid: 1, yearid: 2 },
@@ -126,8 +133,11 @@ export class Students implements OnInit {
     { matricule: 'STU007', classid: 5, yearid: 2 },
     { matricule: 'STU008', classid: 6, yearid: 2 },
     { matricule: 'STU009', classid: 1, yearid: 1 },
-    { matricule: 'STU010', classid: 2, yearid: 1 }
+    { matricule: 'STU010', classid: 2, yearid: 1 },
   ];
+
+  AcademicYears: AcademicYear[] = [];
+  Classes: Class[] = [];
 
   students: StudentTableItem[] = [];
   filteredStudents: StudentTableItem[] = [];
@@ -140,7 +150,7 @@ export class Students implements OnInit {
     totalPages: 0,
     startIndex: 0,
     endIndex: 0,
-    pages: [] as number[]
+    pages: [] as number[],
   };
 
   private apiUrl = 'http://localhost:3000';
@@ -150,7 +160,7 @@ export class Students implements OnInit {
 
   constructor(
     private router: Router,
-    private http: HttpClient
+    private http: HttpClient,
   ) {
     this.combineStudentData();
     this.updatePagination();
@@ -165,45 +175,58 @@ export class Students implements OnInit {
   }
 
   combineStudentData() {
-    this.students = this.mockStudents.map(student => {
-      const studentClassYear = this.mockStudentClassYear.find(scy => scy.matricule === student.matricule);
-      const classObj = studentClassYear ? this.mockClasses.find(c => c.classid === studentClassYear.classid) : null;
-      const year = studentClassYear ? this.mockYears.find(y => y.yearid === studentClassYear.yearid) : null;
+    this.students = this.mockStudents.map((student) => {
+      const studentClassYear = this.mockStudentClassYear.find(
+        (scy) => scy.matricule === student.matricule
+      );
+      const classObj = studentClassYear
+        ? this.mockClasses.find((c) => c.classId === studentClassYear.classid)
+        : null;
+      const year = studentClassYear
+        ? this.mockYears.find((y) => y.yearid === studentClassYear.yearid)
+        : null;
 
       return {
         ...student,
         fullName: `${student.firstName} ${student.lastName}`,
         level: classObj ? classObj.level : 'Unknown',
         department: classObj ? classObj.department : 'Unknown',
-        yearName: year ? `${year.startDate.split('-')[0]}-${year.endDate.split('-')[0]}` : 'Unknown'
+        yearName: year
+          ? `${year.startDate.split('-')[0]}-${year.endDate.split('-')[0]}`
+          : 'Unknown',
       };
     });
 
     this.applyFilters();
   }
 
+
   get years(): string[] {
-    const yearStrings = this.mockYears.map(y => `${y.startDate.split('-')[0]}-${y.endDate.split('-')[0]}`);
-    return ['All', ...Array.from(new Set(yearStrings))];
+    const yearStrings = this.AcademicYears.map(
+      (y) => `${y.startDate.split('-')[0]}-${y.endDate.split('-')[0]}`
+    );
+    return [ ...Array.from(new Set(yearStrings))];
   }
 
   get classes(): string[] {
-    let filteredClasses = [...this.mockClasses];
+    let filteredClasses = [...this.Classes];
 
-    if (this.selectedYear !== 'All') {
-      const selectedYear = this.mockYears.find(y =>
-        `${y.startDate.split('-')[0]}-${y.endDate.split('-')[0]}` === this.selectedYear
+    if (this.selectedYear !== 'All Years') {
+      const selectedYear = this.AcademicYears.find(
+        (y) => `${y.startDate.split('-')[0]}-${y.endDate.split('-')[0]}` === this.selectedYear
       );
       if (selectedYear) {
-        filteredClasses = filteredClasses.filter(c => {
-          const studentsInClass = this.mockStudentClassYear.filter(scy => scy.classid === c.classid);
-          return studentsInClass.some(scy => scy.yearid === selectedYear.yearid);
+        filteredClasses = filteredClasses.filter((c) => {
+          const studentsInClass = this.mockStudentClassYear.filter(
+            (scy) => scy.classid === c.classId
+          );
+          return studentsInClass.some((scy) => scy.yearid === selectedYear.yearId);
         });
       }
     }
 
-    const classNames = filteredClasses.map(c => c.level);
-    return ['All', ...Array.from(new Set(classNames))];
+    const classNames = filteredClasses.map((c) => c.level);
+    return [ ...Array.from(new Set(classNames))];
   }
 
   loadData() {
@@ -211,7 +234,37 @@ export class Students implements OnInit {
       this.combineStudentData();
     } else {
       this.loadFromAPI();
+      this.loadYears();
+      this.loadClass();
     }
+  }
+
+  loadClass(): void {
+    this.http.get<Class[]>(this.classesApi).subscribe({
+      next: (data) => {
+        this.Classes = data;
+        this.applyFilters();
+      },
+      error: (error) => {
+        console.error('Error loading academic years:', error);
+        this.showToastMessage('Failed to load academic years', 'error');
+        this.Classes = [];
+      }
+    })
+  }
+  loadYears(): void {
+    this.http.get<AcademicYear[]>(this.yearsApi).subscribe({
+      next: (data) => {
+        this.AcademicYears = data;
+        this.applyFilters();
+      },
+      error: (error) => {
+        console.error('Error loading academic years:', error);
+        this.showToastMessage('Failed to load academic years', 'error');
+        this.AcademicYears = [];
+      }
+    })
+
   }
 
   loadFromAPI() {
@@ -224,7 +277,7 @@ export class Students implements OnInit {
         console.error('Error loading students:', error);
         this.showToastMessage('Failed to load students', 'error');
         this.combineStudentData();
-      }
+      },
     });
   }
 
@@ -232,26 +285,23 @@ export class Students implements OnInit {
     let filtered = [...this.students];
 
     if (this.selectedYear !== 'All') {
-      filtered = filtered.filter(student =>
-        student.yearName === this.selectedYear
-      );
+      filtered = filtered.filter((student) => student.yearName === this.selectedYear);
     }
 
     if (this.selectedClass !== 'All') {
-      filtered = filtered.filter(student =>
-        student.level === this.selectedClass
-      );
+      filtered = filtered.filter((student) => student.level === this.selectedClass);
     }
 
     if (this.searchTerm.trim() !== '') {
       const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(student =>
-        student.matricule.toLowerCase().includes(term) ||
-        student.firstName.toLowerCase().includes(term) ||
-        student.lastName.toLowerCase().includes(term) ||
-        student.fullName.toLowerCase().includes(term) ||
-        student.email.toLowerCase().includes(term) ||
-        student.phoneNumber.toLowerCase().includes(term)
+      filtered = filtered.filter(
+        (student) =>
+          student.matricule.toLowerCase().includes(term) ||
+          student.firstName.toLowerCase().includes(term) ||
+          student.lastName.toLowerCase().includes(term) ||
+          student.fullName.toLowerCase().includes(term) ||
+          student.email.toLowerCase().includes(term) ||
+          student.phoneNumber.toLowerCase().includes(term)
       );
     }
 
@@ -271,9 +321,17 @@ export class Students implements OnInit {
 
   updatePagination() {
     this.pagination.totalItems = this.filteredStudents.length;
-    this.pagination.totalPages = Math.ceil(this.pagination.totalItems / this.pagination.itemsPerPage);
-    this.pagination.startIndex = Math.min((this.pagination.currentPage - 1) * this.pagination.itemsPerPage + 1, this.pagination.totalItems);
-    this.pagination.endIndex = Math.min(this.pagination.currentPage * this.pagination.itemsPerPage, this.pagination.totalItems);
+    this.pagination.totalPages = Math.ceil(
+      this.pagination.totalItems / this.pagination.itemsPerPage
+    );
+    this.pagination.startIndex = Math.min(
+      (this.pagination.currentPage - 1) * this.pagination.itemsPerPage + 1,
+      this.pagination.totalItems
+    );
+    this.pagination.endIndex = Math.min(
+      this.pagination.currentPage * this.pagination.itemsPerPage,
+      this.pagination.totalItems
+    );
 
     this.pagination.pages = [];
     const maxPagesToShow = 5;
@@ -323,7 +381,7 @@ export class Students implements OnInit {
       cancelText: config.cancelText || 'Cancel',
       type: config.type || 'info',
       onConfirm: config.onConfirm,
-      onCancel: config.onCancel || (() => {})
+      onCancel: config.onCancel || (() => {}),
     };
     this.showConfirmModal = true;
   }
@@ -356,7 +414,7 @@ export class Students implements OnInit {
 
   exportTable() {
     try {
-      const exportData = this.filteredStudents.map(student => {
+      const exportData = this.filteredStudents.map((student) => {
         return {
           matricule: student.matricule,
           firstName: student.firstName,
@@ -366,13 +424,23 @@ export class Students implements OnInit {
           className: student.level,
           department: student.department,
           yearName: student.yearName,
-          emailVerified: student.emailVerified ? 'Yes' : 'No'
+          emailVerified: student.emailVerified ? 'Yes' : 'No',
         };
       });
 
       const worksheetData = [
-        ['Matricule', 'First Name', 'Last Name', 'Email', 'Phone Number', 'Class', 'Department', 'Academic Year', 'Email Verified'],
-        ...exportData.map(item => [
+        [
+          'Matricule',
+          'First Name',
+          'Last Name',
+          'Email',
+          'Phone Number',
+          'Class',
+          'Department',
+          'Academic Year',
+          'Email Verified',
+        ],
+        ...exportData.map((item) => [
           item.matricule,
           item.firstName,
           item.lastName,
@@ -381,8 +449,8 @@ export class Students implements OnInit {
           item.className,
           item.department,
           item.yearName,
-          item.emailVerified
-        ])
+          item.emailVerified,
+        ]),
       ];
 
       const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
@@ -390,7 +458,9 @@ export class Students implements OnInit {
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Students');
 
       const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-      const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const blob = new Blob([excelBuffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -421,7 +491,7 @@ export class Students implements OnInit {
         setTimeout(() => {
           this.router.navigate(['/login']);
         }, 1000);
-      }
+      },
     });
   }
 

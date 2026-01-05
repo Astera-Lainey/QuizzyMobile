@@ -311,7 +311,6 @@ export class Courses implements OnInit {
     } else {
       this.coursesService.getSemesters().subscribe({
         next: (data) => {
-          console.log('Loaded semesters:', data);
           this.semesters = data;
           this.isLoadingSemesters = false;
           this.showToastMessage('Semesters loaded successfully', 'success');
@@ -522,9 +521,6 @@ export class Courses implements OnInit {
         className: this.editingCourse!.className,
         semesterId: this.editingCourse!.semesterId,
       };
-
-      console.log('Updating course with data:', courseData);
-      console.log('Editing course code:', this.editingCourse!.courseCode);
 
       this.coursesService.updateCourse(this.editingCourse!.courseCode, selectedClass.classId, courseData).subscribe({
         next: (response) => {

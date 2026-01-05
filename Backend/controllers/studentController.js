@@ -337,7 +337,7 @@ async function getAllStudents(req, res) {
             include: [
                 {
                     model: Class,
-                    attributes: ['level', 'department'], // Only fetch the fields needed for the DTO
+                    attributes: ['classId','level', 'department'], // Only fetch the fields needed for the DTO
                 }
             ]
         });
@@ -351,6 +351,7 @@ async function getAllStudents(req, res) {
                 phoneNumber: student.phoneNumber,
                 emailVerified: student.emailVerified,
                 // Accessing the nested Class object properties
+                classId: student.Class ? student.Class.classId : null,
                 level: student.Class ? student.Class.level : null,
                 department: student.Class ? student.Class.department : null
             };

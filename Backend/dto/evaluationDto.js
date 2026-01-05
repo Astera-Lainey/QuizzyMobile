@@ -2,6 +2,7 @@ import QuestionDto from "./questionDto.js";
 
 export default class EvaluationDto {
     constructor(evaluation) {
+        this.evaluationId = evaluation.evaluationId;
         this.publishedDate = evaluation.publishedDate;
         this.type = evaluation.type;
         this.startTime = evaluation.startTime;

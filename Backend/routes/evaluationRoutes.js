@@ -10,6 +10,7 @@ evaluationRoutes.get("", evaluationController.getAllEvaluationSessions);
 evaluationRoutes.get("/student", evaluationController.getAllPublishedEvaluationSessions);
 evaluationRoutes.get("/student/revision", evaluationController.getRevisionQuestions)
 evaluationRoutes.post("", evaluationController.createEvaluationSession);
+evaluationRoutes.get("/:evaluationId", evaluationController.getPerformanceData);
 
 //route to start an evaluation
 evaluationRoutes.post("/:evaluationId/start", evaluationController.startEvaluation);

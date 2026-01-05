@@ -29,12 +29,8 @@ interface ImportResult {
 }
 
 interface PerformanceData {
-  totalStudents: number;
-  averageScore: number;
-  passRate: number;
-  completionRate: number;
   students: {
-    id: string;
+    matricule: string;
     name: string;
     score: number;
     percentage: number;
@@ -157,7 +153,7 @@ export class Test implements OnInit {
 
   mockEvaluations: EvaluationItem[] = [
     {
-      id: 1,
+      evaluationId: 1,
       publishedDate: '2025-12-30',
       type: 'Mid term',
       startTime: '08:00:00',
@@ -192,7 +188,7 @@ export class Test implements OnInit {
       ]
     },
     {
-      id: 2,
+      evaluationId: 2,
       publishedDate: '2025-12-28',
       type: 'Resit',
       startTime: '09:00:00',
@@ -221,7 +217,7 @@ export class Test implements OnInit {
       ]
     },
     {
-      id: 3,
+      evaluationId: 3,
       publishedDate: '2025-12-25',
       type: 'Final Exam',
       startTime: '10:00:00',
@@ -259,10 +255,6 @@ export class Test implements OnInit {
   };
 
   performanceData: PerformanceData = {
-    totalStudents: 0,
-    averageScore: 0,
-    passRate: 0,
-    completionRate: 0,
     students: []
   };
 
@@ -518,7 +510,7 @@ export class Test implements OnInit {
         });
 
         const evaluation: EvaluationItem = {
-          id: i,
+          evaluationId: i,
           publishedDate: row.publishedDate || '',
           type: row.type || 'Final Exam',
           startTime: row.startTime || '',
@@ -577,7 +569,7 @@ export class Test implements OnInit {
           });
 
           const evaluation: EvaluationItem = {
-            id: i,
+            evaluationId: i,
             publishedDate: row.publishedDate || '',
             type: row.type || 'Final Exam',
             startTime: row.startTime || '',
@@ -689,10 +681,10 @@ export class Test implements OnInit {
             });
 
             if (row.publishedDate && row.courseCode && row.type && row.startTime && row.endTime) {
-              const newId = Math.max(...this.evaluations.map(e => e.id), 0) + importedEvaluations.length + 1;
+              const newId = Math.max(...this.evaluations.map(e => e.evaluationId), 0) + importedEvaluations.length + 1;
 
               importedEvaluations.push({
-                id: newId,
+                evaluationId: newId,
                 publishedDate: row.publishedDate,
                 type: row.type,
                 startTime: row.startTime,
@@ -742,10 +734,10 @@ export class Test implements OnInit {
               });
 
               if (row.publishedDate && row.courseCode && row.type && row.startTime && row.endTime) {
-                const newId = Math.max(...this.evaluations.map(e => e.id), 0) + importedEvaluations.length + 1;
+                const newId = Math.max(...this.evaluations.map(e => e.evaluationId), 0) + importedEvaluations.length + 1;
 
                 importedEvaluations.push({
-                  id: newId,
+                  evaluationId: newId,
                   publishedDate: row.publishedDate,
                   type: row.type,
                   startTime: row.startTime,
@@ -1363,7 +1355,7 @@ export class Test implements OnInit {
       return;
     }
 
-    const evaluationData: Omit<EvaluationItem, 'id'> = {
+    const evaluationData: Omit<EvaluationItem, 'evaluationId'> = {
       publishedDate: this.newEvaluation.publishedDate,
       type: this.newEvaluation.type,
       startTime: this.newEvaluation.startTime + ':00',
@@ -1375,9 +1367,9 @@ export class Test implements OnInit {
 
     if (this.useMockData) {
 
-      const newId = Math.max(...this.evaluations.map(e => e.id), 0) + 1;
+      const newId = Math.max(...this.evaluations.map(e => e.evaluationId), 0) + 1;
       const newEval: EvaluationItem = {
-        id: newId,
+        evaluationId: newId,
         ...evaluationData
       };
       this.selectedEvaluation = newEval;
@@ -1474,7 +1466,7 @@ export class Test implements OnInit {
     };
 
     if (this.useMockData) {
-      const index = this.evaluations.findIndex(e => e.id === this.selectedEvaluation!.id);
+      const index = this.evaluations.findIndex(e => e.evaluationId === this.selectedEvaluation!.evaluationId);
       if (index !== -1) {
         this.evaluations[index] = evaluationData;
       }
@@ -1484,9 +1476,9 @@ export class Test implements OnInit {
 
       setTimeout(() => this.cdr.detectChanges(), 0);
     } else {
-      this.evaluationService.updateEvaluation(this.selectedEvaluation.id, evaluationData).subscribe({
+      this.evaluationService.updateEvaluation(this.selectedEvaluation.evaluationId, evaluationData).subscribe({
         next: (updatedEvaluation: EvaluationItem) => {
-          const index = this.evaluations.findIndex(e => e.id === updatedEvaluation.id);
+          const index = this.evaluations.findIndex(e => e.evaluationId === updatedEvaluation.evaluationId);
           if (index !== -1) {
             this.evaluations[index] = updatedEvaluation;
           }
@@ -1520,16 +1512,16 @@ export class Test implements OnInit {
       onConfirm: () => {
         if (this.useMockData) {
 
-          this.evaluations = this.evaluations.filter(e => e.id !== evaluation.id);
+          this.evaluations = this.evaluations.filter(e => e.evaluationId !== evaluation.evaluationId);
           this.showToastMessage(`Evaluation for ${evaluation.courseCode} has been deleted successfully!`, 'success');
           this.applyFilters();
 
           setTimeout(() => this.cdr.detectChanges(), 0);
         } else {
 
-          this.evaluationService.deleteEvaluation(evaluation.id).subscribe({
+          this.evaluationService.deleteEvaluation(evaluation.evaluationId).subscribe({
             next: () => {
-              this.evaluations = this.evaluations.filter(e => e.id !== evaluation.id);
+              this.evaluations = this.evaluations.filter(e => e.evaluationId !== evaluation.evaluationId);
               this.showToastMessage(`Evaluation for ${evaluation.courseCode} has been deleted successfully!`, 'success');
               this.applyFilters();
               setTimeout(() => this.cdr.detectChanges(), 0);
@@ -1709,7 +1701,7 @@ export class Test implements OnInit {
     }
 
     if (!this.selectedEvaluation.questions || index < 0 || index >= this.selectedEvaluation.questions.length) {
-      this.showToastMessage('Cannot edit question: Invalid question index', 'error');
+      this.showToastMessage('Cannot edit question: InvalevaluationId question index', 'error');
       return;
     }
 
@@ -1845,15 +1837,15 @@ export class Test implements OnInit {
     }
 
     if (this.useMockData) {
-      if (this.selectedEvaluation.id) {
-        const evalIndex = this.evaluations.findIndex(e => e.id === this.selectedEvaluation!.id);
+      if (this.selectedEvaluation.evaluationId) {
+        const evalIndex = this.evaluations.findIndex(e => e.evaluationId === this.selectedEvaluation!.evaluationId);
         if (evalIndex !== -1) {
           this.evaluations[evalIndex] = { ...this.selectedEvaluation };
         } else {
           this.evaluations.unshift(this.selectedEvaluation);
         }
       } else {
-        this.selectedEvaluation.id = Math.max(...this.evaluations.map(e => e.id), 0) + 1;
+        this.selectedEvaluation.evaluationId = Math.max(...this.evaluations.map(e => e.evaluationId), 0) + 1;
         this.evaluations.unshift(this.selectedEvaluation);
       }
 
@@ -1862,9 +1854,9 @@ export class Test implements OnInit {
       setTimeout(() => this.cdr.detectChanges(), 0);
     } else {
 
-      this.evaluationService.updateEvaluation(this.selectedEvaluation.id, this.selectedEvaluation).subscribe({
+      this.evaluationService.updateEvaluation(this.selectedEvaluation.evaluationId, this.selectedEvaluation).subscribe({
         next: (updatedEvaluation: EvaluationItem) => {
-          const evalIndex = this.evaluations.findIndex(e => e.id === updatedEvaluation.id);
+          const evalIndex = this.evaluations.findIndex(e => e.evaluationId === updatedEvaluation.evaluationId);
           if (evalIndex !== -1) {
             this.evaluations[evalIndex] = updatedEvaluation;
           }
@@ -1891,7 +1883,7 @@ export class Test implements OnInit {
 
   viewPerformance(evaluation: EvaluationItem) {
     this.selectedEvaluation = evaluation;
-    this.loadPerformanceData(evaluation.id);
+    this.loadPerformanceData(evaluation.evaluationId);
     this.showPerformanceModal = true;
 
     setTimeout(() => this.cdr.detectChanges(), 0);
@@ -1900,19 +1892,26 @@ export class Test implements OnInit {
   loadPerformanceData(evaluationId: number) {
 
     setTimeout(() => {
-      this.performanceData = {
-        totalStudents: 45,
-        averageScore: 75.5,
-        passRate: 82,
-        completionRate: 100,
-        students: [
-          { id: 'S001', name: 'John Smith', score: 18, percentage: 90, status: 'Passed', timeTaken: 95 },
-          { id: 'S002', name: 'Emma Johnson', score: 15, percentage: 75, status: 'Passed', timeTaken: 110 },
-          { id: 'S003', name: 'Michael Brown', score: 12, percentage: 60, status: 'Failed', timeTaken: 120 },
-          { id: 'S004', name: 'Sarah Davis', score: 19, percentage: 95, status: 'Passed', timeTaken: 85 },
-          { id: 'S005', name: 'James Wilson', score: 14, percentage: 70, status: 'Passed', timeTaken: 115 }
-        ]
-      };
+      this.evaluationService.getPerformance(evaluationId).subscribe({
+        next: (data) => {
+          this.performanceData = data;
+              // this.cdr.detectChanges();
+        },
+        error: (error) => {
+          console.error('Error loading performance data:', error);
+          this.showToastMessage('Failed to load performance data. Please try again.', 'error');
+          // this.cdr.detectChanges();
+        }
+      })
+      // this.performanceData = {
+      //   students: [
+      //     { matricule: 'S001', name: 'John Smith', score: 18, percentage: 90, status: 'Passed', timeTaken: 95 },
+      //     { matricule: 'S002', name: 'Emma Johnson', score: 15, percentage: 75, status: 'Passed', timeTaken: 110 },
+      //     { matricule: 'S003', name: 'Michael Brown', score: 12, percentage: 60, status: 'Failed', timeTaken: 120 },
+      //     { matricule: 'S004', name: 'Sarah Davis', score: 19, percentage: 95, status: 'Passed', timeTaken: 85 },
+      //     { matricule: 'S005', name: 'James Wilson', score: 14, percentage: 70, status: 'Passed', timeTaken: 115 }
+      //   ]
+      // };
 
       setTimeout(() => this.cdr.detectChanges(), 0);
     }, 500);
@@ -1942,7 +1941,7 @@ export class Test implements OnInit {
 
     const headers = ['Student ID', 'Name', 'Score', 'Percentage', 'Status', 'Time Taken'];
     const rows = this.performanceData.students.map(student => [
-      student.id,
+      student.matricule,
       student.name,
       student.score.toString(),
       student.percentage.toString(),

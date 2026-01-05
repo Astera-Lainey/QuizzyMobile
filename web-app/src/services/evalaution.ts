@@ -16,8 +16,19 @@ export interface Question {
   choices?: Choice[];
 }
 
+export interface PerformanceData {
+  students: {
+    matricule: string;
+    name: string;
+    score: number;
+    percentage: number;
+    status: 'Passed' | 'Failed';
+    timeTaken: number;
+  }[];
+}
+
 export interface EvaluationItem {
-  id: number;
+  evaluationId: number;
   publishedDate: string;
   type: 'Final Exam' | 'Resit' | 'Mid term' | 'CC' | 'TD' | 'TP' | 'Others';
   startTime: string;
@@ -47,8 +58,12 @@ export class EvaluationService {
     return this.http.get<string[]>(`${this.baseUrl}/evaluation/types`);
   }
 
+  getPerformance(evaluationId: number): Observable<PerformanceData>{
+    return this.http.get<PerformanceData>(`${this.baseUrl}/evaluation/${evaluationId}`);
+  }
 
-  createEvaluation(evaluation: Omit<EvaluationItem, 'id'>): Observable<EvaluationItem> {
+
+  createEvaluation(evaluation: Omit<EvaluationItem, 'evaluationId'>): Observable<EvaluationItem> {
     return this.http.post<EvaluationItem>(`${this.baseUrl}/evaluation`, evaluation);
   }
 
