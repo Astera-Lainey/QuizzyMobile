@@ -148,6 +148,12 @@ export default function Stats() {
         {/* COURSES FOR CONNECTED STUDENT */}
         <View style={styles.card}>
           <Text style={[styles.cardTitle, { fontFamily: typography.fontFamily.heading }]}>Your Courses</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+            <Ionicons name="hand-left-outline" size={16} color={colors.secondary} />
+            <Text style={{ fontFamily: typography.fontFamily.body, color: '#666', fontSize: 12 }}>
+              Tap a course below to view your scores
+            </Text>
+          </View>
           {loading ? (
             <Text style={{ fontFamily: typography.fontFamily.body }}>Loading courses…</Text>
           ) : error ? (
@@ -164,7 +170,8 @@ export default function Stats() {
               {courses.map((c, idx) => (
                 <TouchableOpacity
                   key={String(c.courseCode || idx)}
-                  activeOpacity={0.85}
+                  activeOpacity={0.7}
+                  accessibilityRole="button"
                   onPress={async () => {
                     const code = String(c.courseCode || '');
                     if (!code) return;
@@ -192,10 +199,21 @@ export default function Stats() {
                       if (mountedRef.current) setScoresLoading(false);
                     }
                   }}
-                  style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: idx === courses.length - 1 ? 0 : 0.5, borderBottomColor: '#eee' }}
+                  style={[
+                    styles.courseRow,
+                    { borderBottomWidth: idx === courses.length - 1 ? 0 : StyleSheet.hairlineWidth }
+                  ]}
                 >
-                  <Text style={{ fontFamily: typography.fontFamily.body, fontWeight: '600' }}>{c.courseCode || '—'}</Text>
-                  <Text style={{ fontFamily: typography.fontFamily.body }}>{c.courseName || ''}</Text>
+                  <View style={styles.courseTexts}>
+                    <Text style={[styles.courseCode, { fontFamily: typography.fontFamily.body }]}>
+                      {c.courseCode || '—'}
+                    </Text>
+                    <Text style={[styles.courseName, { fontFamily: typography.fontFamily.body }]}>
+                      {c.courseName || ''}
+                    </Text>
+                    <Text style={[styles.courseHint, { fontFamily: typography.fontFamily.body }]}>View scores</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={18} color={colors.secondary} />
                 </TouchableOpacity>
               ))}
             </View>
@@ -332,6 +350,17 @@ const styles = StyleSheet.create({
   chartText: { color: "#999" },
   calculateBtn: { backgroundColor: "#4B1F3B", paddingVertical: 14, borderRadius: 14, alignItems: "center" },
   calculateText: { color: "#fff", fontWeight: "700" },
+  courseRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    borderBottomColor: '#eee'
+  },
+  courseTexts: { flex: 1, paddingRight: 10 },
+  courseCode: { fontSize: 14, fontWeight: '700', color: '#222' },
+  courseName: { fontSize: 13, color: '#444', marginTop: 2 },
+  courseHint: { fontSize: 11, color: '#888', marginTop: 3 },
   modalBg: { flex: 1, backgroundColor: "rgba(0,0,0,0.4)", justifyContent: "center", alignItems: "center" },
   modalCard: { width: "85%", backgroundColor: "#fff", borderRadius: 20, padding: 25 },
   modalTitle: { fontSize: 20, fontWeight: "800", marginBottom: 10 },
