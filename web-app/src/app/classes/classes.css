@@ -1488,3 +1488,75 @@ textarea:focus {
     margin-left: 5px;
   }
 }
+
+.department-select-container {
+  margin-bottom: 8px;
+}
+
+.other-department-input {
+  margin-top: 16px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  border-left: 4px solid #331424;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.other-department-input .form-text {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: #6c757d;
+  font-style: italic;
+}
+
+.other-department-input input {
+  border-color: #331424;
+  transition: border-color 0.3s;
+}
+
+.other-department-input input:focus {
+  border-color: #66384d;
+  box-shadow: 0 0 0 0.2rem rgba(51, 20, 36, 0.25);
+}
+
+select option[value="other"] {
+  font-style: italic;
+  color: #331424;
+  background-color: #f8f9fa;
+  border-top: 1px solid #dee2e6;
+  font-weight: 500;
+}
+
+select option[value="other"]:checked {
+  background-color: #331424;
+  color: white;
+}
+
+.btn-primary:disabled {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  cursor: not-allowed;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.is-invalid {
+  border-color: #dc3545 !important;
+}
+
+.invalid-feedback {
+  display: block;
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 4px;
+}
