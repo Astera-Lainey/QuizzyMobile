@@ -13,6 +13,7 @@ type Evaluation = {
   id: number;
   type?: string;
   courseCode?: string;
+  courseName?: string;
   questions?: EvalQuestion[];
 };
 
@@ -46,6 +47,7 @@ export default function TestDetail() {
         id: Number(e?.id ?? e?.evaluationId ?? idx),
         type: e?.type,
         courseCode: e?.courseCode,
+        courseName: e?.courseName,
         questions: Array.isArray(e?.questions) ? e.questions : [],
       }));
       const found = normalized.find((e) => String(e.id) === String(evaluationId));
@@ -80,7 +82,9 @@ export default function TestDetail() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <QuizHeader />
       <Text style={[styles.title, { fontFamily: typography.fontFamily.heading }]}>
-        {evaluation ? `${evaluation.type || 'Evaluation'} — ${evaluation.courseCode || ''}` : 'Past Test'}
+        {evaluation
+          ? `${evaluation.type || 'Evaluation'} — ${[evaluation.courseCode || '', evaluation.courseName || ''].filter(Boolean).join(' — ')}`
+          : 'Past Test'}
       </Text>
 
       {loading ? (

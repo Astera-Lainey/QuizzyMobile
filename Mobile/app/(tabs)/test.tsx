@@ -33,6 +33,7 @@ type Evaluation = {
     startTime?: string; // '08:00:00'
     endTime?: string; // '11:00:00'
     courseCode?: string; // 'ISI4217'
+    courseName?: string; // e.g., 'Linear Algebra'
     status?: string; // new attribute: 'published', 'completed', etc.
     questions?: Array<{
         questionId?: number;
@@ -110,6 +111,7 @@ const TestQuizPage: React.FC = () => {
                 startTime: e?.startTime,
                 endTime: e?.endTime,
                 courseCode: e?.courseCode,
+                courseName: e?.courseName,
                 questions: Array.isArray(e?.questions) ? e.questions : [],
                 // new attribute from backend to control visibility
                 status: e?.status,
@@ -417,7 +419,9 @@ const TestQuizPage: React.FC = () => {
                             data={evaluations}
                             keyExtractor={(item, idx) => String(item.id ?? idx)}
                             renderItem={({item, index}) => {
-                                const title = `${item.type || 'Evaluation'} — ${item.courseCode || ''}`.trim();
+                                const code = item.courseCode || '';
+                                const name = item.courseName || '';
+                                const title = `${item.type || 'Evaluation'} — ${[code, name].filter(Boolean).join(' — ')}`.trim();
                                 const qCount = Array.isArray(item.questions) ? item.questions.length : 0;
                                 return (
                                     <TouchableOpacity

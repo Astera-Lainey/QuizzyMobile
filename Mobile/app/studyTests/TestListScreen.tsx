@@ -13,6 +13,7 @@ type Evaluation = {
   publishedDate?: string;
   type?: string;
   courseCode?: string;
+  courseName?: string;
   status?: string; // published | completed | ...
   questions?: Array<{
     questionId?: number;
@@ -52,6 +53,7 @@ const TestListScreen: React.FC = () => {
         publishedDate: e?.publishedDate,
         type: e?.type,
         courseCode: e?.courseCode,
+        courseName: e?.courseName,
         status: e?.status,
         questions: Array.isArray(e?.questions) ? e.questions : [],
       }));
@@ -125,7 +127,7 @@ const TestListScreen: React.FC = () => {
           contentContainerStyle={{ paddingBottom: 20 }}
           renderItem={({ item }) => {
             const qCount = Array.isArray(item.questions) ? item.questions.length : 0;
-            const title = `${item.type || 'Evaluation'} — ${item.courseCode || ''}`.trim();
+            const title = `${item.type || 'Evaluation'} — ${[item.courseCode || '', item.courseName || ''].filter(Boolean).join(' — ')}`.trim();
             return (
               <TouchableOpacity
                 activeOpacity={0.85}

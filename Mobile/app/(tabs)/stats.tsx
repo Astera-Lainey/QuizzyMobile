@@ -104,7 +104,7 @@ export default function Stats() {
   const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
   const [scoresLoading, setScoresLoading] = useState(false);
   const [scoresError, setScoresError] = useState<string | null>(null);
-  const [scores, setScores] = useState<Array<{ evaluationId: number | string; courseCode?: string; type?: string; publishedDate?: string; score?: number }>>([]);
+  const [scores, setScores] = useState<Array<{ evaluationId: number | string; courseCode?: string; courseName?: string; type?: string; publishedDate?: string; score?: number }>>([]);
 
   useEffect(() => () => {
     mountedRef.current = false;
@@ -186,6 +186,7 @@ export default function Stats() {
                       const normalized = arr.map((it: any, i: number) => ({
                         evaluationId: Number(it?.evaluationId ?? it?.id ?? i),
                         courseCode: it?.courseCode,
+                        courseName: it?.courseName,
                         type: it?.type,
                         publishedDate: it?.publishedDate,
                         score: typeof it?.score === 'number' ? it.score : Number(it?.score || 0),
@@ -290,6 +291,7 @@ export default function Stats() {
                     const normalized = arr.map((it: any, i: number) => ({
                       evaluationId: Number(it?.evaluationId ?? it?.id ?? i),
                       courseCode: it?.courseCode,
+                      courseName: it?.courseName,
                       type: it?.type,
                       publishedDate: it?.publishedDate,
                       score: typeof it?.score === 'number' ? it.score : Number(it?.score || 0),
@@ -316,9 +318,14 @@ export default function Stats() {
                   key={String(sc.evaluationId ?? index)}
                   style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 0.5, borderBottomColor: '#ccc' }}
                 >
-                  <Text style={{ fontFamily: typography.fontFamily.body, fontSize: 15 }}>
-                    {(sc.type || 'Evaluation')} — {sc.publishedDate || ''}
-                  </Text>
+                  <View style={{ flex: 1, paddingRight: 10 }}>
+                    <Text style={{ fontFamily: typography.fontFamily.body, fontSize: 15 }}>
+                      {(sc.type || 'Evaluation')} — {sc.publishedDate || ''}
+                    </Text>
+                    <Text style={{ fontFamily: typography.fontFamily.body, fontSize: 12, color: '#666', marginTop: 2 }}>
+                      {(sc.courseCode || '') + (sc.courseName ? ` — ${sc.courseName}` : '')}
+                    </Text>
+                  </View>
                   <Text style={{ fontFamily: typography.fontFamily.body, fontWeight: '700', fontSize: 15 }}>
                     {typeof sc.score === 'number' ? sc.score : String(sc.score || '0')}
                   </Text>
