@@ -9,6 +9,8 @@ export default class EvaluationDto {
         this.status = evaluation.status;
         this.courseCode = evaluation.courseCode;
 
+        this.courseName = evaluation.Course?.courseName ?? null;
+
         this.questions = evaluation.Questions ? evaluation.Questions.map(q => new QuestionDto(q, q.EvaluationQuestion)) : [];
     }
 }

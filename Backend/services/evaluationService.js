@@ -1,4 +1,5 @@
 import Choice from "../models/choice.js";
+import Course from "../models/course.js";
 import Evaluation from "../models/evaluation.js";
 import Question from "../models/question.js";
 
@@ -35,13 +36,17 @@ async function getAllPublishedEvaluations() {
     try {
         const evaluations = await Evaluation.findAll({
             where: {
-                status: ["Published", "Completed"]
+                status: ['Published', 'Completed']
             },
             include: [
                 {
+                    model: Course,
+                    attributes: ['courseCode', 'courseName'] // 👈 include courseName
+                },
+                {
                     model: Question,
                     through: {
-                        attributes: ["points"]
+                        attributes: ['points']
                     },
                     include: [
                         {
@@ -173,8 +178,8 @@ async function deleteEvaluation(evaluationId) {
                 // res.status(404).json("Evaluation Not Found");
                 return { status: "NOT FOUND" };
             }
-        }else{
-            return {status: "PUBLISHED"};
+        } else {
+            return { status: "PUBLISHED" };
         }
 
     } catch (error) {

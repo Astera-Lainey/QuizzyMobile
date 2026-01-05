@@ -4,6 +4,7 @@ import ClassCourse from "../models/classCourse.js";
 import Student from "../models/student.js";
 import Teacher from "../models/teacher.js";
 import Semester from "../models/semester.js";
+import CourseDto from "../dto/courseDto.js";
 
 function mapCourseToDTO(course) {
     return course.Classes.map(cls => {
