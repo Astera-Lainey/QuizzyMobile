@@ -1,197 +1,145 @@
-import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Modal, Image
-} from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, FlatList } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import QuizHeader from '@/components/headers/header';
 import { useTheme } from '@/theme/global';
+import { api } from '@/lib/api';
+import { ENDPOINTS } from '@/lib/config';
 
-/* ---------------- QUESTIONS ---------------- */
-
-interface Question {
+type Choice = { choiceId?: number; text?: string; order?: number; isCorrect?: boolean };
+type EvalQuestion = { questionId?: number; text?: string; choices?: Choice[] };
+type Evaluation = {
   id: number;
-  question: string;
-  options: string[];
-  correctAnswer: string;
+  type?: string;
+  courseCode?: string;
+  courseName?: string;
+  questions?: EvalQuestion[];
+};
+
+function pickArray(data: any): any[] {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.data)) return data.data;
+  if (Array.isArray(data?.rows)) return data.rows;
+  return [];
 }
-
-const questions: Question[] = [
-  {
-    id: 1,
-    question: 'What are the colors on the Cameroon flag?',
-    options: [
-      'Green, Red, Yellow',
-      'Blue, White, Red',
-      'Green, Blue, Yellow',
-      'Red, Yellow, Black',
-    ],
-    correctAnswer: 'Green, Red, Yellow',
-  },
-  {
-    id: 2,
-    question: 'Which is the capital of Cameroon?',
-    options: ['Yaoundé', 'Douala', 'Bamenda', 'Garoua'],
-    correctAnswer: 'Yaoundé',
-  },
-];
-
-/* ---------------- COMPONENT ---------------- */
 
 export default function TestDetail() {
   const { typography, colors } = useTheme();
-  const { title } = useLocalSearchParams();
+  const { evaluationId } = useLocalSearchParams<{ evaluationId?: string }>();
 
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, string>>({});
-  const [showResult, setShowResult] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(60); // seconds
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [evaluation, setEvaluation] = useState<Evaluation | null>(null);
+  const mountedRef = useRef(true);
 
-  const currentQuestion = questions[currentIndex];
-  const isLast = currentIndex === questions.length - 1;
+  useEffect(() => () => {
+    mountedRef.current = false;
+  }, []);
 
-  /* ---------------- TIMER ---------------- */
+  const fetchOne = useCallback(async () => {
+    if (!evaluationId) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const raw = pickArray(await api.get<any>(ENDPOINTS.evaluations.revision));
+      const normalized: Evaluation[] = raw.map((e: any, idx: number) => ({
+        id: Number(e?.id ?? e?.evaluationId ?? idx),
+        type: e?.type,
+        courseCode: e?.courseCode,
+        courseName: e?.courseName,
+        questions: Array.isArray(e?.questions) ? e.questions : [],
+      }));
+      const found = normalized.find((e) => String(e.id) === String(evaluationId));
+      if (!mountedRef.current) return;
+      setEvaluation(found || null);
+    } catch (e: any) {
+      if (!mountedRef.current) return;
+      setError(e?.message || 'Failed to load evaluation');
+    } finally {
+      if (mountedRef.current) setLoading(false);
+    }
+  }, [evaluationId]);
 
   useEffect(() => {
-    if (showResult) return;
+    fetchOne();
+  }, [fetchOne]);
 
-    if (timeLeft === 0) {
-      finishTest();
-      return;
-    }
-
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => prev - 1);
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [timeLeft, showResult]);
-
-  /* ---------------- LOGIC ---------------- */
-
-  const selectAnswer = (option: string) => {
-    setAnswers({ ...answers, [currentQuestion.id]: option });
-  };
-
-  const finishTest = () => {
-    setShowResult(true);
-  };
-
-  const score = questions.filter(
-    (q) => answers[q.id] === q.correctAnswer
-  ).length;
-
-  /* ---------------- UI ---------------- */
+  const questions = useMemo(() => {
+    const list = evaluation?.questions || [];
+    return list
+      .map((q: any, idx: number) => ({
+        id: Number(q?.questionId ?? idx),
+        text: String(q?.text ?? 'Question'),
+        choices: Array.isArray(q?.choices)
+          ? [...q.choices].sort((a: any, b: any) => Number(a?.order || 0) - Number(b?.order || 0))
+          : [],
+      }))
+      .filter((q: any) => Number.isFinite(q.id));
+  }, [evaluation]);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <QuizHeader />
-
       <Text style={[styles.title, { fontFamily: typography.fontFamily.heading }]}>
-        {title || 'Test'}
+        {evaluation
+          ? `${evaluation.type || 'Evaluation'} — ${[evaluation.courseCode || '', evaluation.courseName || ''].filter(Boolean).join(' — ')}`
+          : 'Past Test'}
       </Text>
 
-      {/* TIMER */}
-      <Text style={styles.timer}>⏱ {timeLeft}s</Text>
-
-      {/* QUESTION CARD */}
-      <View style={styles.card}>
-        <Text style={styles.question}>{currentQuestion.question}</Text>
-
-        {currentQuestion.options.map((option) => {
-          const selected = answers[currentQuestion.id] === option;
-          const isCorrect = option === currentQuestion.correctAnswer;
-          const showCorrection =
-            showResult || (selected && !isCorrect);
-
-          return (
-            <TouchableOpacity
-              key={option}
-              style={[
-                styles.option,
-                selected && styles.optionSelected,
-                showCorrection && isCorrect && styles.correct,
-                showCorrection && selected && !isCorrect && styles.wrong,
-              ]}
-              onPress={() => selectAnswer(option)}
-              disabled={showResult}
-            >
-              <Text style={styles.optionText}>{option}</Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-
-      <View style={styles.navRow}>
-        <TouchableOpacity
-          disabled={currentIndex === 0}
-          style={[
-            styles.navBtn,
-            styles.secondaryBtn,
-            currentIndex === 0 && styles.disabledBtn,
-          ]}
-          onPress={() => setCurrentIndex(currentIndex - 1)}
-        >
-          <Ionicons name="chevron-back" size={18} color="#331424" />
-          <Text style={styles.secondaryBtnText}>Previous</Text>
-        </TouchableOpacity>
-
-        {!showResult && (
-          <TouchableOpacity
-            disabled={!answers[currentQuestion.id]}
-            style={[
-              styles.navBtn,
-              styles.primaryBtn,
-              !answers[currentQuestion.id] && styles.disabledBtn,
-            ]}
-            onPress={() =>
-              isLast ? finishTest() : setCurrentIndex(currentIndex + 1)
-            }
-          >
-            <Text style={styles.primaryBtnText}>
-              {isLast ? 'Submit' : 'Next'}
-            </Text>
-            <Ionicons name="chevron-forward" size={18} color="#fff" />
-          </TouchableOpacity>
-        )}
-
-        {showResult && currentIndex < questions.length - 1 && (
-          <TouchableOpacity
-            style={[styles.navBtn, styles.primaryBtn]}
-            onPress={() => setCurrentIndex(currentIndex + 1)}
-          >
-            <Text style={styles.primaryBtnText}>Next</Text>
-            <Ionicons name="chevron-forward" size={18} color="#fff" />
-          </TouchableOpacity>
-        )}
-      </View>
-
-      {/* RESULT MODAL */}
-      <Modal visible={showResult} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modal}>
-            <Text style={styles.modalTitle}>Test Completed!</Text>
-            <Image
-                            source={require("../../assets/icons/confetti.gif")}
-                            style={{ width: 90, height: 90, marginBottom: 15 }}
-                          />
-            <Text style={styles.modalScore}>
-              Score: {score}  / total mark
-            </Text>
-
-            <TouchableOpacity
-              style={styles.doneBtn}
-              onPress={() => router.replace('/studyTests/TestListScreen')}
-            >
-              <Text style={styles.doneText}>Done</Text>
-            </TouchableOpacity>
-          </View>
+      {loading ? (
+        <View style={{ alignItems: 'center', padding: 24 }}>
+          <ActivityIndicator size="large" color="#4B1F3B" />
+          <Text style={{ marginTop: 8 }}>Loading…</Text>
         </View>
-      </Modal>
+      ) : error ? (
+        <View style={{ alignItems: 'center', padding: 24 }}>
+          <Text style={{ color: '#b00020', marginBottom: 12 }}>{error}</Text>
+          <TouchableOpacity style={[styles.navBtn, styles.primaryBtn]} onPress={fetchOne}>
+            <Text style={styles.primaryBtnText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      ) : !evaluation ? (
+        <View style={{ alignItems: 'center', padding: 24 }}>
+          <Text>No evaluation found.</Text>
+          <TouchableOpacity style={[styles.navBtn, styles.secondaryBtn]} onPress={() => router.back()}>
+            <Ionicons name="chevron-back" size={18} color="#331424" />
+            <Text style={styles.secondaryBtnText}>Back</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <FlatList
+          data={questions}
+          keyExtractor={(q) => String(q.id)}
+          contentContainerStyle={{ paddingBottom: 24 }}
+          renderItem={({ item, index }) => (
+            <View style={styles.card}>
+              <Text style={styles.question}>{`Q${index + 1}. ${item.text}`}</Text>
+              {(item.choices || []).map((c: Choice, i: number) => {
+                const correct = !!c?.isCorrect;
+                return (
+                  <View
+                    key={String(c?.choiceId ?? i)}
+                    style={[styles.option, correct ? styles.correct : undefined]}
+                  >
+                    <Text style={styles.optionText}>
+                      {String.fromCharCode(65 + i)}. {c?.text || ''}
+                      {correct ? '  (Correct)' : ''}
+                    </Text>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+        />
+      )}
+
+      <View style={[styles.navRow, { marginBottom: 16 }]}>
+        <TouchableOpacity style={[styles.navBtn, styles.secondaryBtn]} onPress={() => router.back()}>
+          <Ionicons name="chevron-back" size={18} color="#331424" />
+          <Text style={styles.secondaryBtnText}>Back</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -200,142 +148,16 @@ export default function TestDetail() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, paddingTop: 40 },
-
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    margin: 15,
-    color: '#331424',
-  },
-
-  timer: {
-    alignSelf: 'flex-end',
-    marginRight: 20,
-    fontWeight: '700',
-    color: '#FD2A9B',
-  },
-
-  card: {
-    backgroundColor: '#fff',
-    padding: 18,
-    borderRadius: 14,
-    marginHorizontal: 15,
-    marginTop: 15,
-    elevation: 3,
-  },
-
-  question: {
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 15,
-  },
-
-  option: {
-    padding: 14,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    marginBottom: 10,
-  },
-
-  optionSelected: {
-    borderColor: '#1abc2dff',
-    backgroundColor: '#b4f8bcff',
-  },
-
-  correct: {
-    backgroundColor: '#D4F8E8',
-    borderColor: '#1abc2dff',
-  },
-
-  wrong: {
-    backgroundColor: '#FDECEA',
-    borderColor: '#E74C3C',
-  },
-
-  optionText: {
-    fontWeight: '600',
-  },
-
-  navRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginHorizontal: 15,
-    marginTop: 15,
-  },
-
-  navBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 18,
-    borderRadius: 12,
-    minWidth: 120,
-    elevation: 3,
-  },
-
-  primaryBtn: {
-    backgroundColor: '#FD2A9B',
-  },
-
-  secondaryBtn: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#331424',
-  },
-
-  primaryBtnText: {
-    color: '#fff',
-    fontWeight: '700',
-    marginHorizontal: 6,
-  },
-
-  secondaryBtnText: {
-    color: '#331424',
-    fontWeight: '700',
-    marginHorizontal: 6,
-  },
-
-  disabledBtn: {
-    opacity: 0.4,
-  },
-
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  modal: {
-    backgroundColor: '#fff',
-    padding: 25,
-    borderRadius: 16,
-    width: '80%',
-    alignItems: 'center',
-  },
-
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 10,
-  },
-
-  modalScore: {
-    fontSize: 16,
-    marginBottom: 20,
-  },
-
-  doneBtn: {
-    backgroundColor: '#FD2A9B',
-    paddingVertical: 14,
-    paddingHorizontal: 40,
-    borderRadius: 12,
-  },
-
-  doneText: {
-    color: '#fff',
-    fontWeight: '700',
-  },
+  title: { fontSize: 22, fontWeight: '700', margin: 15, color: '#331424' },
+  card: { backgroundColor: '#fff', padding: 18, borderRadius: 14, marginHorizontal: 15, marginTop: 15, elevation: 3 },
+  question: { fontSize: 16, fontWeight: '700', marginBottom: 12 },
+  option: { padding: 12, borderRadius: 10, borderWidth: 1, borderColor: '#ddd', marginBottom: 8 },
+  correct: { backgroundColor: '#D4F8E8', borderColor: '#1abc2dff' },
+  optionText: { fontWeight: '600' },
+  navRow: { flexDirection: 'row', justifyContent: 'space-between', marginHorizontal: 15, marginTop: 15 },
+  navBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 12, paddingHorizontal: 18, borderRadius: 12, minWidth: 120, elevation: 3 },
+  primaryBtn: { backgroundColor: '#FD2A9B' },
+  secondaryBtn: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#331424' },
+  primaryBtnText: { color: '#fff', fontWeight: '700', marginHorizontal: 6 },
+  secondaryBtnText: { color: '#331424', fontWeight: '700', marginHorizontal: 6 },
 });

@@ -1,14 +1,8 @@
-// import sequelize from './config/database'
-
-// sequelize.sync().then(() => {
-//     console.log("All tables synchronised.");
-// }).catch(err => {
-//     console.error("Error synchronising tables: ", err);
-// });
+import sequelize from './config/database.js'
 import bodyParser from 'body-parser';
 import express from 'express';
+import cors from 'cors';
 import studentRoutes from './routes/studentRoutes.js';
-import sequelize from './config/database.js';
 import nodeCron from 'node-cron';
 import academicYearController from './controllers/academicYearController.js';
 import semesterController from './controllers/semesterController.js';
@@ -30,7 +24,16 @@ import deviceTokenRoutes from './routes/deviceTokenRoutes.js';
 import excelImportRoutes from './routes/excelImportRoutes.js';
 import { initializeFirebase } from './services/pushNotificationService.js';
 
+sequelize.sync().then(() => {
+    console.log("All tables synchronised.");
+}).catch(err => {
+    console.error("Error synchronising tables: ", err);
+});
+
 const app = express();
+app.use(cors({
+  origin: 'http://localhost:4200'
+}));
 
 app.use(bodyParser.json());
 
@@ -64,11 +67,11 @@ app.listen(port, () => {
     console.log('Connected to DB:', sequelize.config.database);
   });
 
-    sequelize.sync({ alter: true }).then(() => {
-        console.log("All tables synchronised.");
-    }).catch(err => {
-        console.error("Error synchronising tables: ", err);
-    });
+    // sequelize.sync({ alter: true }).then(() => {
+    //     console.log("All tables synchronised.");
+    // }).catch(err => {
+    //     console.error("Error synchronising tables: ", err);
+    // });
     // academicYearController.updateCurrentAcademicYear();
     // semesterController.updateCurrentSemester();
 });

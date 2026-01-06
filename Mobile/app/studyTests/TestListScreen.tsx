@@ -1,172 +1,150 @@
 // studyTests/TestListScreen.tsx
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Modal, ScrollView } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, ActivityIndicator, Image } from 'react-native';
 import { router } from 'expo-router';
 import QuizHeader from '@/components/headers/header';
 import { useTheme } from '@/theme/global';
+import { api } from '@/lib/api';
+import { ENDPOINTS } from '@/lib/config';
+import ResultCard from '@/components/cards/resultCard';
 
-interface Test {
-  id: string;
-  subject: string;
-  session: 'Normal Session' | 'Mid Term';
-  duration: string; // e.g. "50 minutes"
+type Evaluation = {
+  id: number;
+  publishedDate?: string;
+  type?: string;
+  courseCode?: string;
+  courseName?: string;
+  status?: string; // published | completed | ...
+  questions?: Array<{
+    questionId?: number;
+    text?: string;
+    choices?: Array<{ choiceId?: number; text?: string; order?: number; isCorrect?: boolean }>;
+  }>;
+};
+
+function pickArray(data: any): any[] {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.data)) return data.data;
+  if (Array.isArray(data?.rows)) return data.rows;
+  return [];
 }
-
-const allTests: Test[] = [
-  { id: '1', subject: 'IT Architecture', session: 'Normal Session', duration: '50 minutes' },
-  { id: '2', subject: 'IT Architecture', session: 'Mid Term', duration: '50 minutes' },
-  { id: '3', subject: 'Software Engineering', session: 'Normal Session', duration: '45 minutes' },
-  { id: '4', subject: 'Databases', session: 'Mid Term', duration: '60 minutes' },
-];
-
-const sessions = ['Normal Session', 'Mid Term'];
-const durations = ['30 minutes', '45 minutes', '50 minutes', '60 minutes'];
 
 const TestListScreen: React.FC = () => {
   const theme = useTheme();
   const { typography } = theme;
 
-  const [searchText, setSearchText] = useState('');
-  const [selectedSessions, setSelectedSessions] = useState<string[]>([]);
-  const [selectedDurations, setSelectedDurations] = useState<string[]>([]);
-  const [filteredTests, setFilteredTests] = useState<Test[]>(allTests);
-  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [courseFilter, setCourseFilter] = useState('');
+  const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const mountedRef = useRef(true);
 
-  const handleSearch = (text: string) => {
-    setSearchText(text);
-    applyFilter(text, selectedSessions, selectedDurations);
-  };
+  useEffect(() => () => {
+    mountedRef.current = false;
+  }, []);
 
-  const toggleSessionFilter = (session: string) => {
-    const updated = selectedSessions.includes(session)
-      ? selectedSessions.filter((s) => s !== session)
-      : [...selectedSessions, session];
-    setSelectedSessions(updated);
-    applyFilter(searchText, updated, selectedDurations);
-  };
-
-  const toggleDurationFilter = (duration: string) => {
-    const updated = selectedDurations.includes(duration)
-      ? selectedDurations.filter((d) => d !== duration)
-      : [...selectedDurations, duration];
-    setSelectedDurations(updated);
-    applyFilter(searchText, selectedSessions, updated);
-  };
-
-  const applyFilter = (text: string, sessions: string[], durations: string[]) => {
-    let filtered = allTests;
-
-    if (text) {
-      filtered = filtered.filter((test) =>
-        test.subject.toLowerCase().includes(text.toLowerCase())
-      );
+  const fetchCompleted = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const raw = pickArray(await api.get<any>(ENDPOINTS.evaluations.revision));
+      const normalized: Evaluation[] = raw.map((e: any, idx: number) => ({
+        id: Number(e?.id ?? e?.evaluationId ?? idx),
+        publishedDate: e?.publishedDate,
+        type: e?.type,
+        courseCode: e?.courseCode,
+        courseName: e?.courseName,
+        status: e?.status,
+        questions: Array.isArray(e?.questions) ? e.questions : [],
+      }));
+      const completed = normalized.filter((e) => String(e.status || '').toLowerCase() === 'completed');
+      const sorted = completed.sort((a, b) => {
+        const da = a.publishedDate ? Date.parse(a.publishedDate) : 0;
+        const db = b.publishedDate ? Date.parse(b.publishedDate) : 0;
+        return db - da; // newest first
+      });
+      if (!mountedRef.current) return;
+      setEvaluations(sorted);
+    } catch (e: any) {
+      if (!mountedRef.current) return;
+      setError(e?.message || 'Failed to load past questions');
+    } finally {
+      if (mountedRef.current) setLoading(false);
     }
+  }, []);
 
-    if (sessions.length > 0) {
-      filtered = filtered.filter((test) => sessions.includes(test.session));
-    }
+  useEffect(() => {
+    fetchCompleted();
+  }, [fetchCompleted]);
 
-    if (durations.length > 0) {
-      filtered = filtered.filter((test) => durations.includes(test.duration));
-    }
-
-    setFilteredTests(filtered);
-  };
-
-  const resetFilter = () => {
-    setSelectedSessions([]);
-    setSelectedDurations([]);
-    setFilteredTests(allTests);
-    setShowFilterModal(false);
-  };
-
-  const renderItem = ({ item }: { item: Test }) => (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={() => router.push(`/studyTests/TestDetail?testId=${item.id}`)}
-    >
-      <Text style={[{ fontFamily: typography.fontFamily.heading }, styles.cardSubject]}>
-        {item.subject}
-      </Text>
-      <Text style={styles.cardInfo}>Session: {item.session}</Text>
-      <Text style={styles.cardInfo}>Duration: {item.duration}</Text>
-    </TouchableOpacity>
-  );
+  const filtered = useMemo(() => {
+    const txt = courseFilter.trim().toLowerCase();
+    if (!txt) return evaluations;
+    return evaluations.filter((e) => String(e.courseCode || '').toLowerCase().includes(txt));
+  }, [courseFilter, evaluations]);
 
   return (
     <View style={styles.container}>
       <QuizHeader />
-      <Text style={[{ fontFamily: typography.fontFamily.heading }, styles.title]}>
-        Past Tests
-      </Text>
+      <Text style={[{ fontFamily: typography.fontFamily.heading }, styles.title]}>Past Questions</Text>
 
-      {/* Search Bar */}
+      {/* Filter by course code */}
       <TextInput
         style={styles.searchBar}
-        placeholder="Search tests..."
-        value={searchText}
-        onChangeText={handleSearch}
+        placeholder="Filter by course code..."
+        value={courseFilter}
+        onChangeText={setCourseFilter}
+        autoCapitalize="characters"
       />
 
-      {/* Filter Button */}
-      <TouchableOpacity style={styles.filterButton} onPress={() => setShowFilterModal(true)}>
-        <Text style={styles.filterButtonText}>Filter</Text>
-      </TouchableOpacity>
-
-      <FlatList
-        data={filteredTests}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        contentContainerStyle={{ paddingBottom: 20 }}
-        ListEmptyComponent={
-          <Text style={styles.noResultsText}>No tests found.</Text>
-        }
-      />
-
-      {/* Filter Modal */}
-      <Modal visible={showFilterModal} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Filter Tests</Text>
-
-            <Text style={styles.modalSubtitle}>Session</Text>
-            <ScrollView>
-              {sessions.map((session) => (
-                <TouchableOpacity
-                  key={session}
-                  style={styles.checkboxContainer}
-                  onPress={() => toggleSessionFilter(session)}
-                >
-                  <View style={[styles.checkbox, selectedSessions.includes(session) && styles.checkedBox]} />
-                  <Text style={styles.checkboxLabel}>{session}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-
-            <Text style={styles.modalSubtitle}>Duration</Text>
-            <ScrollView>
-              {durations.map((duration) => (
-                <TouchableOpacity
-                  key={duration}
-                  style={styles.checkboxContainer}
-                  onPress={() => toggleDurationFilter(duration)}
-                >
-                  <View style={[styles.checkbox, selectedDurations.includes(duration) && styles.checkedBox]} />
-                  <Text style={styles.checkboxLabel}>{duration}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-
-            <TouchableOpacity style={styles.applyButton} onPress={() => setShowFilterModal(false)}>
-              <Text style={styles.applyButtonText}>Apply</Text>
+      {loading ? (
+        <View style={{ alignItems: 'center', padding: 24 }}>
+          <ActivityIndicator size="large" color="#4B1F3B" />
+          <Text style={{ marginTop: 8 }}>Loading past questions…</Text>
+        </View>
+      ) : filtered.length === 0 ? (
+        <View style={styles.emptyState}>
+          <Image source={require('../../assets/icons/process.png')} style={{ width: 80, height: 80, marginBottom: 10, opacity: 0.85 }} />
+          <Text style={styles.emptyTitle}>No past questions yet</Text>
+          {error ? (
+            <Text style={styles.emptySubtitle}>{error}</Text>
+          ) : (
+            <Text style={styles.emptySubtitle}>Try another course code or retry.</Text>
+          )}
+          <View style={styles.emptyActions}>
+            <TouchableOpacity style={[styles.primaryBtn, { flex: 1 }]} onPress={() => router.push('/(tabs)')}>
+              <Text style={styles.primaryBtnText}>Go Home</Text>
             </TouchableOpacity>
-
-            <TouchableOpacity style={styles.resetButton} onPress={resetFilter}>
-              <Text style={styles.resetButtonText}>Reset</Text>
+            <TouchableOpacity style={[styles.primaryBtn, { flex: 1, backgroundColor: '#6b2a66' }]} onPress={fetchCompleted}>
+              <Text style={styles.primaryBtnText}>Retry</Text>
             </TouchableOpacity>
           </View>
         </View>
-      </Modal>
+      ) : (
+        <FlatList
+          data={filtered}
+          keyExtractor={(item, idx) => String(item.id ?? idx)}
+          contentContainerStyle={{ paddingBottom: 20 }}
+          renderItem={({ item }) => {
+            const qCount = Array.isArray(item.questions) ? item.questions.length : 0;
+            return (
+              <TouchableOpacity
+                activeOpacity={0.85}
+                onPress={() => router.push({ pathname: '/studyTests/TestDetail', params: { evaluationId: String(item.id) } })}
+                style={{ marginHorizontal: 15, marginBottom: 12 }}
+              >
+                <ResultCard
+                  typeLabel={item.type || 'Evaluation'}
+                  courseCode={item.courseCode || ''}
+                  courseName={item.courseName || ''}
+                  progress={qCount}
+                  total={qCount}
+                />
+              </TouchableOpacity>
+            );
+          }}
+        />
+      )}
     </View>
   );
 };
@@ -190,72 +168,10 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 2,
   },
-  filterButton: {
-    backgroundColor: '#FF0080',
-    alignSelf: 'flex-end',
-    marginHorizontal: 15,
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderRadius: 20,
-    marginBottom: 10,
-  },
-  filterButtonText: { color: '#fff', fontWeight: 'bold' },
-  card: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 12,
-    marginVertical: 8,
-    marginHorizontal: 15,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 5,
-    elevation: 3,
-  },
-  cardSubject: { fontSize: 18, fontWeight: '700', marginBottom: 6 },
-  cardInfo: { fontSize: 14, color: '#555' },
-  noResultsText: { textAlign: 'center', marginTop: 20, color: '#999', fontSize: 16 },
-
-  modalOverlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0,0,0,0.4)',
-  },
-  modalContent: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    maxHeight: '60%',
-  },
-  modalTitle: { fontSize: 20, fontWeight: '700', marginBottom: 15 },
-  modalSubtitle: { fontSize: 16, fontWeight: '600', marginBottom: 8 },
-  checkboxContainer: { flexDirection: 'row', alignItems: 'center', marginBottom: 15 },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 5,
-    borderWidth: 1,
-    borderColor: '#555',
-    marginRight: 10,
-  },
-  checkedBox: { backgroundColor: '#FF0080', borderColor: '#FF0080' },
-  checkboxLabel: { fontSize: 16 },
-  applyButton: {
-    backgroundColor: '#FF0080',
-    paddingVertical: 12,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  applyButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
-  resetButton: {
-    paddingVertical: 12,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginTop: 10,
-    borderWidth: 1,
-    borderColor: '#FF0080',
-  },
-  resetButtonText: { color: '#FF0080', fontWeight: 'bold', fontSize: 16 },
+  emptyState: { alignItems: 'center', padding: 24 },
+  emptyTitle: { fontSize: 18, fontWeight: '700', marginBottom: 6 },
+  emptySubtitle: { fontSize: 14, color: '#555', marginBottom: 12 },
+  emptyActions: { flexDirection: 'row', gap: 12, width: '100%', paddingHorizontal: 15 },
+  primaryBtn: { backgroundColor: '#4B1F3B', paddingVertical: 12, borderRadius: 10, alignItems: 'center', marginHorizontal: 6 },
+  primaryBtnText: { color: '#fff', fontWeight: 'bold' },
 });

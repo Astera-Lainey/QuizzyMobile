@@ -21,22 +21,6 @@ const study = () => {
         <Image style={styles.image} source={require("../../assets/images/book.png")}/>
         <Text style={[{fontFamily: typography.fontFamily.heading},styles.cardText]}>Past Questions</Text>
       </TouchableOpacity>
-
-      <TouchableOpacity 
-        style={styles.card} 
-          onPress={() => router.push("/studyTests/TestListScreen")}
-      >
-        <Image style={styles.image} source={require("../../assets/images/books.png")}/>
-        <Text style={[{fontFamily: typography.fontFamily.heading},styles.cardText]}>Revision Tests</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity 
-        style={styles.card} 
-          onPress={() => router.push("/studyTests/TestListScreen")}
-      >
-        <Image style={styles.image} source={require("../../assets/images/book-stack.png")}/>
-        <Text style={[{fontFamily: typography.fontFamily.heading},styles.cardText]}>Recent Tests</Text>
-      </TouchableOpacity>
     </View>
   );
 }

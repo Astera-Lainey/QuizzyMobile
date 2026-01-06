@@ -17,6 +17,10 @@ import { BlurView } from "expo-blur";
 import { useTheme } from "@/theme/global";
 import { Ionicons } from "@expo/vector-icons";
 import Button from "@/components/buttons/button";
+import { api } from "@/lib/api";
+import { ENDPOINTS } from "@/lib/config";
+import { useAuth } from "@/context/AuthContext";
+import type { LoginSuccess } from "@/context/AuthContext";
 
 const { width, height } = Dimensions.get("window");
 
@@ -24,10 +28,13 @@ export default function Login() {
   const router = useRouter();
   const theme = useTheme();
   const { colors, typography } = theme;
+  const { setAuthFromLogin } = useAuth();
 
   const [mat, setMat] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const iconColor = "#331424";
 
@@ -98,21 +105,42 @@ export default function Login() {
               </TouchableOpacity>
             </View>
 
+            {error ? (
+              <Text style={{ color: 'red',textAlign: 'center', width: '100%' }}>{error}</Text>
+            ) : null}
             {/* Login Link */}
             <TouchableOpacity
               onPress={() => router.push("/auth/signup")}
               style={{ marginTop: 16 }}
             >
               <Text style={{ color: colors.primary, fontSize: 16, fontFamily: typography.fontFamily.buttonText }}>
-                Already have an account? Sign Up.
+                Create an account? Sign Up.
               </Text>
             </TouchableOpacity>
 
             <Button
-              title="Login"
+              title={loading ? "Logging in..." : "Login"}
               iconPosition="right"
               icon={require("../../assets/icons/Forward.png")}
-              onPress={() => router.push("/(tabs)")}
+              onPress={async () => {
+                if (loading) return;
+                setError(null);
+                setLoading(true);
+                try {
+                  const res = await api.post<LoginSuccess>(ENDPOINTS.auth.login, {
+                    matricule: mat,
+                    password,
+                  });
+                  if (res && res.token) {
+                    await setAuthFromLogin(res);
+                  }
+                  router.push("/(tabs)");
+                } catch (e: any) {
+                  setError(e?.message || "Login failed");
+                } finally {
+                  setLoading(false);
+                }
+              }}
             />
           </View>
         </ScrollView>

@@ -8,7 +8,9 @@ evaluationRoutes.get("", evaluationController.getAllEvaluationSessions);
 
 //students route to get all not draft evaluations
 evaluationRoutes.get("/student", evaluationController.getAllPublishedEvaluationSessions);
+evaluationRoutes.get("/student/revision", evaluationController.getRevisionQuestions)
 evaluationRoutes.post("", evaluationController.createEvaluationSession);
+evaluationRoutes.get("/:evaluationId", evaluationController.getPerformanceData);
 
 //route to start an evaluation
 evaluationRoutes.post("/:evaluationId/start", evaluationController.startEvaluation);
@@ -19,7 +21,7 @@ evaluationRoutes.post("/response/:id/answers", evaluationController.saveAnswers)
 //route to submit answers
 evaluationRoutes.post("/response/:id/submit", evaluationController.submitAnswers);
 
-// evaluationRoutes.get("/course/:courseCode", evaluationController.getEvaluationByCourseCode);
+evaluationRoutes.get("/course/:courseCode", evaluationController.getEvaluationByCourseCode);
 
 
 evaluationRoutes.put("/update/:evaluationId", evaluationController.updateEvaluationSession);

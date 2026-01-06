@@ -12,6 +12,8 @@ import studentEvaluationDto from "../dto/studentEvaluationDto.js";
 import studentQuestionDto from "../dto/studentQuestionDto.js";
 import Choice from "../models/choice.js";
 import AIGradingService from "../services/AIGradingService.js";
+import StudentPerformanceDto from "../dto/StudentPerformanceDto.js";
+import Student from "../models/student.js";
 
 function combineDateAndTime(date, time) {
     const [hours, minutes, seconds] = time.split(':');
@@ -53,7 +55,7 @@ async function autoGrade(responseSheetId) {
 
     const responseSheet = await ResponseSheet.findByPk(responseSheetId);
 
-    if(!responseSheet){
+    if (!responseSheet) {
         throw new Error("Response Sheet not found");
     }
 
@@ -99,45 +101,99 @@ async function autoGrade(responseSheetId) {
 async function gradeResponseSheet(responseSheetId) {
 
     //correct it
-  const answers = await Answer.findAll({
-    where: { responseSheetId },
-    include: [Question]
-  });
-
-  let totalScore = 0;
-
-  for (const answer of answers) {
-    const question = answer.Question;
-
-    const evalQ = await EvaluationQuestion.findOne({
-      where: {
-        questionId: question.questionId
-      }
+    const answers = await Answer.findAll({
+        where: { responseSheetId },
+        include: [Question]
     });
 
-    const maxScore = evalQ.points;
+    let totalScore = 0;
 
-    // OPEN QUESTION → AI grading
-    if (question.type === "OPEN") {
-      const aiResult = await AIGradingService.gradeOpenAnswer({
-        questionText: question.text,
-        studentAnswer: answer.textValue,
-        maxScore
-      });
+    for (const answer of answers) {
+        const question = answer.Question;
 
-      answer.score = aiResult.score;
-      answer.feedback = aiResult.feedback;
-      answer.gradingConfidence = aiResult.confidence;
-      answer.gradingSource = aiResult.gradingSource;
+        const evalQ = await EvaluationQuestion.findOne({
+            where: {
+                questionId: question.questionId
+            }
+        });
 
-      totalScore += aiResult.score;
+        const maxScore = evalQ.points;
+
+        // OPEN QUESTION → AI grading
+        if (question.type === "OPEN") {
+            const aiResult = await AIGradingService.gradeOpenAnswer({
+                questionText: question.text,
+                studentAnswer: answer.textValue,
+                maxScore
+            });
+
+            answer.score = aiResult.score;
+            answer.feedback = aiResult.feedback;
+            answer.gradingConfidence = aiResult.confidence;
+            answer.gradingSource = aiResult.gradingSource;
+
+            totalScore += aiResult.score;
+        }
+
+        // MCQ / CLOSED grading handled elsewhere
+        await answer.save();
     }
 
-    // MCQ / CLOSED grading handled elsewhere
-    await answer.save();
-  }
+    return totalScore;
+}
 
-  return totalScore;
+async function getPerformanceData(req, res) {
+    try {
+        const responseSheets = await ResponseSheet.findAll({
+            where: {
+                evaluationId: req.params.evaluationId
+            },
+            include: [
+                {
+                    model: Student,
+                    attributes: ['matricule', 'firstName', 'lastName']
+                },
+                {
+                    model: Evaluation,
+                    attributes: ['startTime'],
+                    include: [
+                        {
+                            model: Question,
+                            attributes: [],
+                            through: {
+                                attributes: ['points']
+                            }
+                        }
+                    ]
+                }
+            ]
+        });
+
+        let totalPossibleScore = 0;
+
+        if (responseSheets.length > 0) {
+            // Safely access Questions; if missing, default to an empty array
+            const questions = responseSheets[0].Evaluation?.Questions ?? [];
+
+            totalPossibleScore = questions.reduce(
+                (sum, q) => sum + (q.EvaluationQuestion?.points || 0),
+                0
+            );
+        }
+
+        const completedSheets = responseSheets.filter(rs => rs.submittedAt !== null);
+
+        const students = completedSheets.map(
+            rs => new StudentPerformanceDto(rs, totalPossibleScore)
+        );
+
+        res.status(200).json({ students });
+    } catch (error) {
+        console.error("Error fetching performance data:", error);
+        res.status(500).json({
+            message: "Failed to fetch performance data"
+        });
+    }
 }
 
 async function createEvaluationSession(req, res) {
@@ -147,7 +203,7 @@ async function createEvaluationSession(req, res) {
         let newEvaluation;
         let count = 0;
 
-        const result = await evaluationController.createEvaluation(
+        const result = await evaluationService.createEvaluation(
             req.body.publishedDate,
             req.body.type,
             req.body.startTime,
@@ -224,7 +280,7 @@ async function updateEvaluationSession(req, res) {
             return res.status(404).json("Evaluation Not Found")
         }
 
-        if (result.status === "PUBLISHED"){
+        if (result.status === "PUBLISHED") {
             return res.status(403).json("Evaluation Already Published And Cannot be Updated");
         }
 
@@ -261,19 +317,19 @@ async function updateEvaluationSession(req, res) {
 }
 
 async function deleteEvaluationSession(req, res) {
-    try{
+    try {
         const result = await evaluationService.deleteEvaluation(req.params.evaluationId);
 
-        if (result.status === "NOT FOUND"){
+        if (result.status === "NOT FOUND") {
             return res.status(404).json("Evaluation Not Found");
         }
-        if (result.status === "DELETED"){
+        if (result.status === "DELETED") {
             return res.status(200).json("Evaluation Deleted Successfully");
         }
-        if (result.status === "PUBLISHED"){
+        if (result.status === "PUBLISHED") {
             return res.status(403).json("Evaluation Published Already");
         }
-    }catch (error){
+    } catch (error) {
         console.error("Error Deleting Evaluation: ", error);
         return res.status(500).json("Internal Server Error");
     }
@@ -290,6 +346,39 @@ async function getAllEvaluationSessions(req, res) {
         console.error("Error fetching evaluations:", error);
         res.status(500).json({
             message: "Failed to fetch evaluations"
+        });
+    }
+}
+
+async function getEvaluationByCourseCode(req, res) {
+    try {
+        const courseCode = req.params.courseCode;
+        const evaluation = await evaluationService.getEvaluationByCourseCode(courseCode);
+        if (evaluation) {
+            const evaluationDto = new EvaluationDto(evaluation);
+            return res.status(200).json(evaluationDto);
+        } else {
+            return res.status(404).json("Evaluation Not Found for the given Course Code");
+        }
+    } catch (error) {
+        console.error("Error fetching evaluation by course code:", error);
+        res.status(500).json({
+            message: "Failed to fetch evaluation by course code"
+        });
+    }
+}
+
+async function getRevisionQuestions(req, res) {
+    try {
+        const evaluations = await evaluationService.getAllPublishedEvaluations();
+
+        const evaluationDtos = evaluations.map(evaluation => new EvaluationDto(evaluation));
+
+        return res.status(200).json(evaluationDtos);
+    } catch (error) {
+        console.error("Error Fetching Evaluations Questions:", error);
+        res.status(500).json({
+            message: "Failed to Fetch Evaluations Questions"
         });
     }
 }
@@ -429,13 +518,13 @@ async function submitAnswers(req, res) {
 
         const submittedResponseSheet = await autoSubmitResponseSheet(responseSheet);
 
-        if(submittedResponseSheet){
+        if (submittedResponseSheet) {
             return res.status(200).json("Answers Submitted Successfully");
-        }else{
+        } else {
             return res.status(404).json("Answers Not Submitted")
         }
 
-    }catch (error) {
+    } catch (error) {
         console.error("Error Submitting Responsheet: ", error);
         return res.status(500).json("Failed to Submit Answers")
     }
@@ -449,5 +538,8 @@ export default {
     startEvaluation,
     saveAnswers,
     submitAnswers,
-    deleteEvaluationSession
+    deleteEvaluationSession,
+    getRevisionQuestions,
+    getEvaluationByCourseCode,
+    getPerformanceData
 }
