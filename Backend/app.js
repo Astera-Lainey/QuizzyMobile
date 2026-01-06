@@ -7,7 +7,7 @@ import nodeCron from 'node-cron';
 import academicYearController from './controllers/academicYearController.js';
 import semesterController from './controllers/semesterController.js';
 import './models/association.js';
-import './cron/evaluationScheduler.js'
+// import './cron/evaluationScheduler.js'
 import academicYearRoutes from './routes/academicYearRoutes.js';
 import answerRoutes from './routes/answerRoutes.js';
 import choiceRoutes from './routes/choiceRoutes.js';
@@ -16,7 +16,7 @@ import courseRoutes from './routes/courseRoutes.js';
 import evaluationRoutes from './routes/evaluationRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import questionRoutes from './routes/questionRoutes.js';
-import ResponseSheetRoutes from './routes/responseSheetRoutes.js';
+import ResponseSheetRoutes from './routes/ResponseSheetRoutes.js';
 import semesterRoutes from './routes/semesterRoutes.js';
 import teacherRoutes from './routes/teacherRoutes.js';
 import administratorRoutes from './routes/administratorRoutes.js';
@@ -32,9 +32,12 @@ sequelize.sync().then(() => {
 
 const app = express();
 app.use(cors({
-  origin: 'http://localhost:4200'
+  origin: [
+    'http://localhost:4200',
+    'https://your-frontend-domain.com'
+  ],
+  credentials: true
 }));
-
 app.use(bodyParser.json());
 
 nodeCron.schedule('0 0 * * *', academicYearController.updateCurrentAcademicYear);
@@ -55,6 +58,15 @@ app.use("/teacher", teacherRoutes); //done
 app.use("/admin", administratorRoutes); //done
 app.use("/device-token", deviceTokenRoutes); //done
 app.use("/excel", excelImportRoutes); //done
+
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'UP',
+    timestamp: new Date()
+  });
+});
+
+
 
 // Initialiser Firebase pour les push notifications
 initializeFirebase();
